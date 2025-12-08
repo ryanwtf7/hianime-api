@@ -1,4 +1,3 @@
-import { validationError } from '../utils/errors.js';
 import { extractStream } from '../extractor/extractStream.js';
 import { getServers } from './serversController.js';
 
@@ -53,15 +52,12 @@ const embedController = async (c) => {
             return c.text('Failed to extract stream', 500);
         }
 
-        const rawM3u8Url = stream.link.file;
-        const referer = 'https://megacloud.tv';
-        const proxyUrl = `/api/v1/proxy?url=${encodeURIComponent(rawM3u8Url)}&referer=${encodeURIComponent(referer)}`;
-
-        const m3u8Url = proxyUrl;
+        const m3u8Url = stream.link.file;
         const tracks = stream.tracks || [];
         const intro = stream.intro || {};
         const outro = stream.outro || {};
-
+        const episodeType = type || 'sub';
+        
         const html = `
 <!DOCTYPE html>
 <html>
@@ -90,6 +86,48 @@ const embedController = async (c) => {
             --media-preview-thumbnail-border: 2px solid #fff;
             --media-preview-thumbnail-border-radius: 2px;
             --media-tooltip-display: none;
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            pointer-events: none;
+        }
+        .loading-overlay.visible {
+            display: flex;
+        }
+        
+        /* Hide controls when loading */
+        .loading-overlay.visible ~ .mobile-centered-controls {
+            display: none !important;
+        }
+        .spinner_l9ve {
+            animation: spinner_rcyq 1.2s cubic-bezier(0.52, .6, .25, .99) infinite;
+        }
+        .spinner_cMYp {
+            animation-delay: .4s;
+        }
+        .spinner_gHR3 {
+            animation-delay: .8s;
+        }
+        @keyframes spinner_rcyq {
+            0% {
+                transform: translate(12px, 12px) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
         }
 
         .skip-button {
@@ -127,13 +165,18 @@ const embedController = async (c) => {
             padding: 3px 7px;
         }
 
-        /* Position subtitles above controls */
+        /* Position subtitles above controls - single display only */
         video::-webkit-media-text-track-container {
             bottom: 80px !important;
         }
         
         [mediaisfullscreen] video::-webkit-media-text-track-container {
             bottom: 100px !important;
+        }
+        
+        /* Hide media-chrome's default subtitle display to prevent duplicates */
+        media-controller::part(captions) {
+            display: none !important;
         }
 
         media-controller[mediaisfullscreen] {
@@ -176,8 +219,22 @@ const embedController = async (c) => {
         media-settings-menu-item:hover { background: rgba(255, 255, 255, 0.1); }
         [mediaisfullscreen] media-settings-menu-item { font-size: 18px; height: 52px; }
         
+        /* Progress bar highlights container */
+        .progress-highlights {
+            position: absolute;
+            bottom: 36px;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            z-index: 21;
+            pointer-events: none;
+        }
+        [breakpointmd] .progress-highlights { bottom: 47px; }
+        [mediaisfullscreen] .progress-highlights { bottom: 52.5px; height: 8px; }
+
         media-time-range {
             position: absolute; bottom: 36px; width: 100%; height: 5px; z-index: 20;
+            overflow: visible !important;
             --media-range-track-background: rgba(255, 255, 255, 0.2);
             --media-range-track-pointer-background: rgba(255, 255, 255, 0.5);
             --media-time-range-buffered-color: rgba(255, 255, 255, 0.4);
@@ -193,14 +250,23 @@ const embedController = async (c) => {
         [mediaisfullscreen] media-time-range { bottom: 52.5px; height: 8px; }
         [mediaisfullscreen] media-time-range:hover { --media-range-track-height: 8px; }
 
-        /* Intro/Outro highlights on progress bar */
-        .intro-highlight, .outro-highlight {
-            position: absolute;
-            height: 100%;
-            background-color: rgba(33, 150, 243, 0.6);
-            top: 0;
-            pointer-events: none;
-            z-index: 1;
+        /* Intro/Outro highlights on progress bar - Enhanced chapter-style */
+        .progress-highlights .intro-highlight, 
+        .progress-highlights .outro-highlight {
+            position: absolute !important;
+            height: 60% !important;
+            top: 20% !important;
+            background-color: #fdd253 !important;
+            border-radius: 2px !important;
+            pointer-events: none !important;
+            transition: height 0.2s ease !important;
+            display: block !important;
+        }
+        
+        .progress-highlights:hover .intro-highlight,
+        .progress-highlights:hover .outro-highlight {
+            height: 100% !important;
+            top: 0 !important;
         }
 
         media-control-bar {
@@ -210,7 +276,11 @@ const embedController = async (c) => {
         [breakpointmd] media-control-bar { height: 48px; line-height: 48px; }
         [mediaisfullscreen] media-control-bar { height: 54px; line-height: 54px; }
 
-        media-play-button { --media-button-icon-width: 30px; padding: 6px 10px; }
+        media-play-button { 
+            --media-button-icon-width: 34px; 
+            padding: 6px 10px; 
+            padding-top: 6px !important;
+        }
         media-play-button #icon-play, media-play-button #icon-pause { filter: drop-shadow(0 0 2px #00000080); }
         media-play-button :is(#play-p1, #play-p2, #pause-p1, #pause-p2) { transition: clip-path 0.25s ease-in; }
         media-play-button:not([mediapaused]) #play-p2 { transition: clip-path 0.35s ease-in; }
@@ -226,6 +296,16 @@ const embedController = async (c) => {
         media-mute-button #icon-volume { clip-path: inset(0); }
         media-mute-button[mediavolumelevel='off'] #icon-volume { clip-path: inset(100% 0 0 0); }
         
+        /* Make volume icon smaller and move down */
+        media-mute-button {
+            padding-top: 8px !important;
+        }
+        
+        media-mute-button svg {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
         media-volume-range { height: 36px; --media-range-track-background: rgba(255, 255, 255, 0.2); }
         media-mute-button + media-volume-range { width: 0; overflow: hidden; transition: width 0.2s ease-in; }
         media-mute-button:hover + media-volume-range, media-mute-button:focus + media-volume-range,
@@ -236,18 +316,37 @@ const embedController = async (c) => {
         [mediaisfullscreen] media-time-display { font-size: 20px; }
         .control-spacer { flex-grow: 1; }
 
-        media-captions-button { position: relative; }
-        
-        /* CC button inactive state */
-        media-captions-button:not([mediasubtitleslist]) svg { 
-            opacity: 0.3; 
-        }
-        
-        /* CC button active state - improved */
-        media-captions-button[aria-checked='true'] {
+        media-captions-button { 
             position: relative;
+            padding-top: 10px !important;
         }
         
+        /* Make CC button smaller */
+        media-captions-button svg {
+            width: 20px !important;
+            height: 20px !important;
+            transition: opacity 0.2s ease;
+        }
+        
+        media-captions-button .caption-on-icon {
+            display: none;
+        }
+        
+        media-captions-button .caption-off-icon {
+            display: block;
+            opacity: 0.5;
+        }
+        
+        /* When captions are active */
+        media-captions-button[aria-checked='true'] .caption-on-icon {
+            display: block;
+        }
+        
+        media-captions-button[aria-checked='true'] .caption-off-icon {
+            display: none;
+        }
+        
+        /* CC button active state indicator */
         media-captions-button[aria-checked='true']::after {
             content: '';
             position: absolute;
@@ -274,9 +373,9 @@ const embedController = async (c) => {
             justify-content: center; margin: -5% auto 0; width: 100%; gap: 1rem;
         }
         .mobile-centered-controls [role='button'] {
-            --media-icon-color: var(--media-primary-color, #fff); background: rgba(0, 0, 0, 0.5);
+            --media-icon-color: var(--media-primary-color, #fff);
             --media-button-icon-width: 36px; --media-button-icon-height: 36px;
-            border-radius: 50%; user-select: none; aspect-ratio: 1;
+            user-select: none;
         }
         .mobile-centered-controls media-play-button { width: 5rem; }
         .mobile-centered-controls :is(media-seek-backward-button, media-seek-forward-button) { width: 3rem; padding: 0.5rem; }
@@ -285,61 +384,77 @@ const embedController = async (c) => {
         /* Custom menu styling - improved */
         .custom-menu {
             display: none; position: absolute; right: 12px; bottom: 61px;
-            background: rgba(28, 28, 28, 0.98); border-radius: 12px;
-            min-width: 260px; max-height: 400px; overflow-y: auto;
-            z-index: 80; backdrop-filter: blur(20px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(20, 20, 20, 0.96); border-radius: 10px;
+            min-width: 240px; max-height: 420px; overflow-y: auto;
+            z-index: 80; backdrop-filter: blur(30px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .custom-menu.active { display: block; animation: slideIn 0.2s ease-out; }
+        .custom-menu.active { display: block; animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .menu-item {
-            padding: 14px 18px; cursor: pointer; font-size: 15px;
+            padding: 12px 16px; cursor: pointer; font-size: 14px;
             display: flex; align-items: center; justify-content: space-between;
-            transition: background 0.15s ease; color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease; color: #e0e0e0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-weight: 400;
         }
         .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background: rgba(255, 255, 255, 0.12); }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
         .menu-item.active { 
-            color: #2196f3; 
-            background: rgba(33, 150, 243, 0.1);
+            color: #4fc3f7; 
+            background: rgba(79, 195, 247, 0.12);
+            font-weight: 500;
         }
         .menu-item.active::after {
             content: '✓';
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 600;
+            color: #4fc3f7;
         }
         .menu-header {
-            padding: 14px 18px; font-weight: 600; 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 14px 16px; font-weight: 600; font-size: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
             display: flex; align-items: center; gap: 8px; cursor: pointer;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             position: sticky; top: 0; z-index: 1;
+            color: #fff;
         }
-        .menu-header:hover { background: rgba(255, 255, 255, 0.08); }
+        .menu-header:hover { background: rgba(255, 255, 255, 0.06); }
     </style>
 </head>
 <body>
-      <media-controller breakpoints="md:480" defaultsubtitles gesturesdisabled defaultstreamtype="on-demand">
+      <media-controller breakpoints="md:480" gesturesdisabled defaultstreamtype="on-demand">
         <video slot="media" id="video-player" crossorigin="anonymous" playsinline autoplay></video>
+        
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay visible">
+          <svg width="80" height="80" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path class="spinner_l9ve" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
+            <path class="spinner_l9ve spinner_cMYp" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
+            <path class="spinner_l9ve spinner_gHR3" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
+          </svg>
+        </div>
         
         <div class="yt-gradient-bottom"></div>
 
         <div class="skip-container" slot="centered-chrome">
             <div id="skip-intro" class="skip-button">
-                Skip Intro <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0V4z"/></svg>
+                Skip Intro
             </div>
             <div id="skip-outro" class="skip-button">
-                Skip Outro <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0V4z"/></svg>
+                Skip Outro
             </div>
         </div>
 
         <!-- Custom Settings Menu -->
         <div id="custom-settings-menu" class="custom-menu"></div>
+
+        <!-- Progress bar highlights container -->
+        <div id="progress-highlights" class="progress-highlights"></div>
 
         <media-time-range id="time-range">
           <media-preview-thumbnail slot="preview"></media-preview-thumbnail>
@@ -363,8 +478,11 @@ const embedController = async (c) => {
           </media-play-button>
 
           <media-mute-button class="yt-button">
-            <svg slot="icon" viewBox="0 0 36 36">
-                <path d="M13 15H9V21H13L18 26V10L13 15Z" fill="#fff"/>
+            <svg slot="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <!-- Speaker body -->
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="#fff"/>
+                <!-- Sound waves (will be hidden when muted) -->
+                <path id="volume-wave" d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="#fff"/>
             </svg>
           </media-mute-button>
           <media-volume-range></media-volume-range>
@@ -373,9 +491,13 @@ const embedController = async (c) => {
           <span class="control-spacer"></span>
 
           <media-captions-button class="yt-button">
-             <svg slot="icon" viewBox="0 0 36 36">
-               <path d="M11 11c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V13c0-1.1-.9-2-2-2H11zm0 12V13h14v10H11z" fill="#fff"/>
-               <path d="M14.5 18.5h-1v-1h1v1zm0-2h-1v-1h1v1zm2 2h-1v-1h1v1zm0-2h-1v-1h1v1zm5.5 2h-1v-1h1v1zm0-2h-1v-1h1v1zm2 2h-1v-1h1v1zm0-2h-1v-1h1v1z" fill="#fff"/>
+             <!-- Caption ON icon -->
+             <svg slot="icon" class="caption-on-icon" viewBox="0 16 240 240" xmlns="http://www.w3.org/2000/svg">
+               <path d="M215,40H25c-2.7,0-5,2.2-5,5v150c0,2.7,2.2,5,5,5h190c2.7,0,5-2.2,5-5V45C220,42.2,217.8,40,215,40z M108.1,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C90.4,141.7,102,143.5,108.1,137.7z M152.9,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C135.2,141.7,146.8,143.5,152.9,137.7z" fill="#fff"/>
+             </svg>
+             <!-- Caption OFF icon -->
+             <svg slot="icon" class="caption-off-icon" viewBox="0 16 240 240" xmlns="http://www.w3.org/2000/svg">
+               <path d="M99.4,97.8c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6c0,9.6,11.6,11.4,17.7,5.5c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9C107.9,100,103.8,97.8,99.4,97.8z M144.1,97.8c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6c0,9.6,11.6,11.4,17.7,5.5c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9C152.6,100,148.5,97.8,144.1,97.8L144.1,97.8z M200,60v120H40V60H200 M215,40H25c-2.7,0-5,2.2-5,5v150c0,2.7,2.2,5,5,5h190c2.7,0,5-2.2,5-5V45C220,42.2,217.8,40,215,40z" fill="#fff"/>
              </svg>
           </media-captions-button>
 
@@ -412,7 +534,8 @@ const embedController = async (c) => {
     <script>
         const intro = ${JSON.stringify(intro || { start: 0, end: 0 })};
         const outro = ${JSON.stringify(outro || { start: 0, end: 0 })};
-        const subtitles = ${JSON.stringify(tracks.filter(t => t.kind === 'captions'))};
+        const episodeType = '${episodeType}';
+        const subtitles = ${JSON.stringify(tracks || [])};
         
         
         const video = document.getElementById('video-player');
@@ -420,11 +543,40 @@ const embedController = async (c) => {
         const settingsMenu = document.getElementById('custom-settings-menu');
         const skipIntroBtn = document.getElementById('skip-intro');
         const skipOutroBtn = document.getElementById('skip-outro');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         let hls = null;
         let currentQuality = -1;
         let currentSpeed = 1;
         let currentSubtitle = null;
+        let subtitlesLoaded = false;
+
+        // Loading state management
+        function showLoading() {
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('visible');
+                
+                // Hide play/pause and seek buttons during loading
+                const playButtons = document.querySelectorAll('media-play-button');
+                const seekButtons = document.querySelectorAll('media-seek-backward-button, media-seek-forward-button');
+                
+                playButtons.forEach(btn => btn.style.visibility = 'hidden');
+                seekButtons.forEach(btn => btn.style.visibility = 'hidden');
+            }
+        }
+
+        function hideLoading() {
+            if (loadingOverlay) {
+                loadingOverlay.classList.remove('visible');
+                
+                // Show play/pause and seek buttons when loading completes
+                const playButtons = document.querySelectorAll('media-play-button');
+                const seekButtons = document.querySelectorAll('media-seek-backward-button, media-seek-forward-button');
+                
+                playButtons.forEach(btn => btn.style.visibility = 'visible');
+                seekButtons.forEach(btn => btn.style.visibility = 'visible');
+            }
+        }
 
         // Initialize HLS with optimized config
         if (Hls.isSupported()) {
@@ -439,7 +591,10 @@ const embedController = async (c) => {
                 manifestLoadingTimeOut: 30000,
                 levelLoadingTimeOut: 30000,
                 startLevel: -1,
-                abrEwmaDefaultEstimate: 500000
+                abrEwmaDefaultEstimate: 500000,
+                // Disable HLS.js native subtitle rendering to prevent duplicates
+                renderTextTracksNatively: true,
+                enableWorker: true
             });
             
             hls.loadSource('${m3u8Url}');
@@ -457,6 +612,7 @@ const embedController = async (c) => {
                             break;
                         default:
                             hls.destroy();
+                            hideLoading();
                             break;
                     }
                 }
@@ -466,40 +622,119 @@ const embedController = async (c) => {
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 loadSubtitles();
             });
+
+            // Handle loading states
+            hls.on(Hls.Events.FRAG_LOADING, () => {
+                if (video.paused && video.readyState < 3) {
+                    showLoading();
+                }
+            });
+
+            hls.on(Hls.Events.FRAG_LOADED, () => {
+                if (video.readyState >= 3) {
+                    hideLoading();
+                }
+            });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = '${m3u8Url}';
             video.addEventListener('loadedmetadata', loadSubtitles);
         }
 
+        // Video event listeners for loading states
+        video.addEventListener('waiting', showLoading);
+        video.addEventListener('seeking', showLoading);
+        video.addEventListener('loadstart', showLoading);
+        
+        video.addEventListener('canplay', hideLoading);
+        video.addEventListener('playing', hideLoading);
+        video.addEventListener('seeked', hideLoading);
+
+        // Monitor text tracks to prevent duplicates
+        function enforceSubtitleState() {
+            if (video.textTracks && video.textTracks.length > 0) {
+                let showingCount = 0;
+                Array.from(video.textTracks).forEach((track, i) => {
+                    if (track.mode === 'showing') {
+                        showingCount++;
+                        // If this isn't the current subtitle, disable it
+                        if (i !== currentSubtitle) {
+                            track.mode = 'disabled';
+                        }
+                    }
+                });
+                
+                // If multiple tracks are showing, disable all except current
+                if (showingCount > 1) {
+                    Array.from(video.textTracks).forEach((track, i) => {
+                        track.mode = i === currentSubtitle ? 'showing' : 'disabled';
+                    });
+                }
+            }
+        }
+        
+        // Check for duplicate subtitles periodically
+        setInterval(enforceSubtitleState, 500);
+
         // Load subtitles function
         function loadSubtitles() {
+            // Prevent loading subtitles multiple times
+            if (subtitlesLoaded) {
+                return;
+            }
+            
+            // For dub episodes or when no subtitles available, don't load anything
+            if (subtitles.length === 0) {
+                subtitlesLoaded = true;
+                updateCaptionButtonState(false);
+                return;
+            }
+            
+            // Remove any existing subtitle tracks to prevent duplicates
+            const existingTracks = video.querySelectorAll('track');
+            existingTracks.forEach(track => track.remove());
+            
+            // Also disable all existing text tracks from HLS
+            if (video.textTracks && video.textTracks.length > 0) {
+                Array.from(video.textTracks).forEach(track => {
+                    track.mode = 'disabled';
+                });
+            }
+            
+            // Load external subtitle tracks
             subtitles.forEach((track, index) => {
                 const trackEl = document.createElement('track');
                 trackEl.kind = 'subtitles';
                 trackEl.label = track.label;
                 trackEl.srclang = 'en';
-                trackEl.src = \`/api/v1/proxy?url=\${encodeURIComponent(track.file)}&referer=\${encodeURIComponent('https://megacloud.tv')}\`;
-                if (track.default && index === 0) {
-                    trackEl.default = true;
-                    currentSubtitle = index;
-                }
+                trackEl.src = track.file; // Use direct subtitle URL
+                
+                // Do NOT set any track as default - user must manually enable
+                
                 video.appendChild(trackEl);
             });
             
-            // Enable first subtitle by default if available
-            if (video.textTracks.length > 0 && currentSubtitle !== null) {
-                video.textTracks[currentSubtitle].mode = 'showing';
-            }
+            // Wait for tracks to be loaded, then set their mode
+            setTimeout(() => {
+                // Disable ALL text tracks by default
+                Array.from(video.textTracks).forEach((track, i) => {
+                    track.mode = 'disabled';
+                });
+                
+                // Do not enable any subtitle by default
+                currentSubtitle = null;
+                updateCaptionButtonState(false);
+            }, 100);
+            
+            subtitlesLoaded = true;
         }
 
         // Add intro/outro highlights to progress bar
         function addProgressBarHighlights() {
-            const timeRange = document.getElementById('time-range');
-            if (!timeRange || !video.duration) return;
+            const highlightsContainer = document.getElementById('progress-highlights');
+            if (!highlightsContainer || !video.duration) return;
 
             // Remove existing highlights
-            const existingHighlights = timeRange.querySelectorAll('.intro-highlight, .outro-highlight');
-            existingHighlights.forEach(h => h.remove());
+            highlightsContainer.innerHTML = '';
 
             const duration = video.duration;
 
@@ -511,7 +746,7 @@ const embedController = async (c) => {
                 const widthPercent = ((intro.end - intro.start) / duration) * 100;
                 introDiv.style.left = startPercent + '%';
                 introDiv.style.width = widthPercent + '%';
-                timeRange.appendChild(introDiv);
+                highlightsContainer.appendChild(introDiv);
             }
 
             // Add outro highlight
@@ -522,7 +757,7 @@ const embedController = async (c) => {
                 const widthPercent = ((outro.end - outro.start) / duration) * 100;
                 outroDiv.style.left = startPercent + '%';
                 outroDiv.style.width = widthPercent + '%';
-                timeRange.appendChild(outroDiv);
+                highlightsContainer.appendChild(outroDiv);
             }
         }
 
@@ -630,12 +865,18 @@ const embedController = async (c) => {
             let html = '<div class="menu-header" data-action="back">← Subtitles</div>';
             
             if (subtitles.length === 0) {
-                html += '<div class="menu-item" style="opacity: 0.5; cursor: default;">No subtitles available</div>';
+                const message = episodeType === 'dub' 
+                    ? 'No subtitles available' 
+                    : 'No subtitles available';
+                html += '<div class="menu-item" style="opacity: 0.5; cursor: default;">' + message + '</div>';
             } else {
                 html += '<div class="menu-item' + (currentSubtitle === null ? ' active' : '') + '" data-subtitle="null">Off</div>';
                 
                 subtitles.forEach((track, index) => {
-                    html += '<div class="menu-item' + (currentSubtitle === index ? ' active' : '') + '" data-subtitle="' + index + '">' + track.label + '</div>';
+                    // Only show subtitles that have a label
+                    if (track.label) {
+                        html += '<div class="menu-item' + (currentSubtitle === index ? ' active' : '') + '" data-subtitle="' + index + '">' + track.label + '</div>';
+                    }
                 });
             }
             
@@ -672,18 +913,23 @@ const embedController = async (c) => {
         function setSubtitle(index) {
             currentSubtitle = index;
             
-            // Update text tracks
+            // Update text tracks - use 'disabled' instead of 'hidden' to fully turn off
             Array.from(video.textTracks).forEach((track, i) => {
-                track.mode = i === index ? 'showing' : 'hidden';
+                track.mode = i === index ? 'showing' : 'disabled';
             });
             
-            // Update CC button state
-            const ccButton = document.querySelector('media-captions-button');
-            if (ccButton) {
-                ccButton.setAttribute('aria-checked', index !== null ? 'true' : 'false');
-            }
+            // Update CC button state and icon
+            updateCaptionButtonState(index !== null);
             
             showMainMenu();
+        }
+
+        // Update caption button visual state
+        function updateCaptionButtonState(isActive) {
+            const ccButton = document.querySelector('media-captions-button');
+            if (ccButton) {
+                ccButton.setAttribute('aria-checked', isActive ? 'true' : 'false');
+            }
         }
 
         settingsBtn.addEventListener('click', (e) => {

@@ -15,7 +15,7 @@ const detailpageController = async (c) => {
       }
       return extractDetailpage(result.data);
     },
-    60 * 60 * 24 // 24 hours cache
+    60 * 60 * 24
   );
 };
 
