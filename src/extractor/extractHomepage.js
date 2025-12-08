@@ -57,13 +57,13 @@ export const extractHomepage = (html) => {
     obj.synopsis = $(el).find('.desi-description').text().trim();
 
     const details = $(el).find('.sc-detail');
-    obj.type = details.find('.scd-item').eq(0).text().trim(); // Grabs 'TV'
-    obj.duration = details.find('.scd-item').eq(1).text().trim(); // Grabs '24m'
-    obj.aired = details.find('.scd-item.m-hide').text().trim(); // Grabs 'Oct 20, 1999'
-    obj.quality = details.find('.scd-item .quality').text().trim(); // Grabs 'HD'
+    obj.type = details.find('.scd-item').eq(0).text().trim();
+    obj.duration = details.find('.scd-item').eq(1).text().trim();
+    obj.aired = details.find('.scd-item.m-hide').text().trim();
+    obj.quality = details.find('.scd-item .quality').text().trim();
 
-    obj.episodes.sub = Number(details.find('.tick-sub').text().trim()); // Grabs '1122'
-    obj.episodes.dub = Number(details.find('.tick-dub').text().trim()); // Grabs '1096'
+    obj.episodes.sub = Number(details.find('.tick-sub').text().trim());
+    obj.episodes.dub = Number(details.find('.tick-dub').text().trim());
 
     const epsText = details.find('.tick-eps').length
       ? details.find('.tick-eps').text().trim()

@@ -23,7 +23,6 @@ export const extractNews = (html) => {
         obj.thumbnail = $(el).find('.zrn-image').attr('src') || null;
         obj.uploadedAt = $(el).find('.time-posted').text().trim() || null;
 
-        // Only add if we have at least a title
         if (obj.title) {
             news.push(obj);
         }

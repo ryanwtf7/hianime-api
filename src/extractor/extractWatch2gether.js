@@ -36,8 +36,7 @@ export const extractWatch2gether = (html) => {
 
         obj.createdBy = $(el).find('.uc-info strong').text().trim() || null;
         obj.createdAt = $(el).find('.uc-info .time').text().trim() || null;
-
-        // Only add if we have at least an ID
+        
         if (obj.id) {
             rooms.push(obj);
         }

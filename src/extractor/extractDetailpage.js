@@ -36,7 +36,6 @@ export const extractDetailpage = (html) => {
     recommended: [],
   };
 
-  // all information elements
   const main = $('#ani_detail .anis-content');
   const moreSeasons = $('#main-content .block_area-seasons');
   const relatedAndMostPopular = $('.block_area.block_area_sidebar.block_area-realtime');
@@ -44,7 +43,6 @@ export const extractDetailpage = (html) => {
     '.block_area.block_area_category .tab-content .block_area-content .film_list-wrap .flw-item'
   );
 
-  // extract about info
   obj.poster = main.find('.film-poster .film-poster-img').attr('src');
   obj.is18Plus = Boolean(main.find('.film-poster .tick-rate').length > 0);
 
@@ -69,7 +67,6 @@ export const extractDetailpage = (html) => {
 
   const moreInfo = main.find('.anisc-info-wrap .anisc-info .item');
 
-  // extract imbalance info
   moreInfo.each((i, el) => {
     const name = $(el).find('.item-head').text();
 
@@ -88,9 +85,9 @@ export const extractDetailpage = (html) => {
         obj.aired.from = aired[0].trim();
         if (aired.length > 1) {
           const secondPart = aired[1].trim();
-          obj.aired.to = secondPart === '?' ? null : secondPart; // Set to null if "?"
+          obj.aired.to = secondPart === '?' ? null : secondPart;
         } else {
-          obj.aired.to = null; // Explicitly set to null if there's no second part
+          obj.aired.to = null;
         }
 
         break;
@@ -130,7 +127,6 @@ export const extractDetailpage = (html) => {
     }
   });
 
-  // extract moreseasons
   if (moreSeasons.length) {
     $(moreSeasons)
       .find('.os-list .os-item')
@@ -155,7 +151,7 @@ export const extractDetailpage = (html) => {
         obj.moreSeasons.push(innerObj);
       });
   }
-  // extract related and most popular
+  
   const extractRelatedAndMostPopular = (index, array) => {
     relatedAndMostPopular
       .eq(index)
