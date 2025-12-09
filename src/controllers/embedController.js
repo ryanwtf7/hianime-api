@@ -2,14 +2,13 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { BsGearFill, BsCheckLg, BsChevronLeft, BsAspectRatio, BsSpeedometer2, BsCollectionPlay, BsBadgeCc, BsPip } from 'react-icons/bs';
 import { AiOutlineRollback } from "react-icons/ai";
+import { FaPlay, FaPause } from "react-icons/fa6";
 import { getServers } from './serversController.js';
 import { extractStream } from '../extractor/extractStream.js';
 
 const embedController = async (c) => {
     try {
         let { id, server, type } = c.req.param();
-
-        // Helper to render React icons to static markup
         const renderIcon = (IconComponent, props = {}) => {
             return ReactDOMServer.renderToStaticMarkup(React.createElement(IconComponent, props));
         };
@@ -24,7 +23,9 @@ const embedController = async (c) => {
             cc: renderIcon(BsBadgeCc),
             pip: renderIcon(BsPip),
             rollback: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px' } }),
-            rollbackFlipped: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } })
+            rollbackFlipped: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } }),
+            play: renderIcon(FaPlay),
+            pause: renderIcon(FaPause)
         };
 
         if (!id) id = c.req.query('id');
@@ -123,7 +124,6 @@ const embedController = async (c) => {
             background: rgba(0, 0, 0, 0.3);
             z-index: 100;
             pointer-events: none;
-            backdrop-filter: blur(2px);
         }
         .loading-overlay.visible {
             display: flex;
@@ -159,7 +159,6 @@ const embedController = async (c) => {
             color: #fff; padding: 10px 24px; border-radius: 0px; cursor: pointer;
             font-weight: 600; font-size: 14px; display: none; align-items: center;
             gap: 10px; pointer-events: auto; margin-bottom: 12px;
-            /* backdrop-filter removed */
             transition: all 0.2s ease;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             text-transform: uppercase;
@@ -253,18 +252,18 @@ const embedController = async (c) => {
         /* Progress bar highlights container */
         .progress-highlights {
             position: absolute;
-            bottom: 38px;
+            bottom: 36px; /* Moved 2px higher (was 38px) */
             left: 0;
             width: 100%;
             height: 4px;
             z-index: 21;
             pointer-events: none;
         }
-        [breakpointmd] .progress-highlights { bottom: 48px; }
-        [mediaisfullscreen] .progress-highlights { bottom: 52px; height: 6px; }
+        [breakpointmd] .progress-highlights { bottom: 46px; } /* Moved 2px higher (was 48px) */
+        [mediaisfullscreen] .progress-highlights { bottom: 50px; height: 6px; } /* Moved 2px higher (was 52px) */
 
         media-time-range {
-            position: absolute; bottom: 38px; width: 100%; height: 4px; z-index: 20;
+            position: absolute; bottom: 36px; width: 100%; height: 4px; z-index: 20; /* Moved 2px higher (was 38px) */
             overflow: visible !important;
             --media-range-track-background: rgba(255, 255, 255, 0.15);
             --media-range-track-pointer-background: rgba(255, 255, 255, 0.3);
@@ -278,8 +277,8 @@ const embedController = async (c) => {
         media-time-range:hover {
             height: 8px; --media-range-thumb-transform: scale(1);
         }
-        [breakpointmd] media-time-range { bottom: 48px; }
-        [mediaisfullscreen] media-time-range { bottom: 52px; height: 8px; }
+        [breakpointmd] media-time-range { bottom: 46px; } /* Moved 2px higher (was 48px) */
+        [mediaisfullscreen] media-time-range { bottom: 50px; height: 8px; } /* Moved 2px higher (was 52px) */
         [mediaisfullscreen] media-time-range:hover { height: 10px; }
 
         /* Intro/Outro highlights on progress bar - Enhanced chapter-style */
@@ -348,7 +347,6 @@ const embedController = async (c) => {
             width: 72px; height: 72px;
             background: rgba(0,0,0,0.6);
             border-radius: 50%;
-            /* backdrop-filter removed */
             transition: all 0.2s ease;
             --media-button-icon-width: 32px;
             border: 2px solid rgba(255,255,255,0.1);
@@ -359,17 +357,15 @@ const embedController = async (c) => {
             border-color: transparent;
         }
 
-        /* NEXT.JS STYLE SETTINGS MENU - Glassmorphism & Modern */
+        /* NEXT.JS STYLE SETTINGS MENU - Removed backdrop-filter */
         .custom-menu {
             display: none; position: absolute; right: 20px; bottom: 70px;
-            background: rgba(15, 15, 15, 0.85); /* Dark semi-transparent background */
+            background: rgba(15, 15, 15, 0.95); /* Solid background, removed blur */
             border-radius: 12px;
             width: 280px; 
             max-height: 400px; 
             overflow: hidden;
             z-index: 100; 
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
             box-shadow: 
                 0 0 0 1px rgba(255, 255, 255, 0.08),
                 0 20px 40px rgba(0, 0, 0, 0.4),
@@ -558,7 +554,14 @@ const embedController = async (c) => {
         </media-control-bar>
 
         <div class="mobile-centered-controls" slot="centered-chrome">
-          <media-play-button></media-play-button>
+          <media-play-button>
+            <svg slot="play" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              ${icons.play}
+            </svg>
+            <svg slot="pause" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              ${icons.pause}
+            </svg>
+          </media-play-button>
         </div>
       </media-controller>
 
