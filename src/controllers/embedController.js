@@ -1,9 +1,31 @@
-import { extractStream } from '../extractor/extractStream.js';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import { BsGearFill, BsCheckLg, BsChevronLeft, BsAspectRatio, BsSpeedometer2, BsCollectionPlay, BsBadgeCc, BsPip } from 'react-icons/bs';
+import { AiOutlineRollback } from "react-icons/ai";
 import { getServers } from './serversController.js';
+import { extractStream } from '../extractor/extractStream.js';
 
 const embedController = async (c) => {
     try {
         let { id, server, type } = c.req.param();
+
+        // Helper to render React icons to static markup
+        const renderIcon = (IconComponent, props = {}) => {
+            return ReactDOMServer.renderToStaticMarkup(React.createElement(IconComponent, props));
+        };
+
+        const icons = {
+            back: renderIcon(AiOutlineRollback),
+            check: renderIcon(BsCheckLg),
+            chevron: renderIcon(BsChevronLeft, { style: { transform: 'rotate(180deg)' } }),
+            gear: renderIcon(BsGearFill),
+            speed: renderIcon(BsSpeedometer2),
+            ratio: renderIcon(BsAspectRatio),
+            cc: renderIcon(BsBadgeCc),
+            pip: renderIcon(BsPip),
+            rollback: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px' } }),
+            rollbackFlipped: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } })
+        };
 
         if (!id) id = c.req.query('id');
         if (!server) server = c.req.query('server');
@@ -57,34 +79,34 @@ const embedController = async (c) => {
         const intro = stream.intro || {};
         const outro = stream.outro || {};
         const episodeType = type || 'sub';
-        
+
         const html = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Watch Anime</title>
+    <title>VidSrc</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/media-chrome/+esm"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/media-chrome/menu/+esm"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: Roboto, Arial, sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         
         media-controller {
-            width: 100%; height: 100%; display: block; font-size: 13px;
-            font-family: Roboto, Arial, sans-serif;
-            --media-font-family: Roboto, helvetica neue, segoe ui, arial, sans-serif;
+            width: 100%; height: 100%; display: block; font-size: 14px;
+            font-family: inherit;
+            --media-font-family: inherit;
             -webkit-font-smoothing: antialiased;
             --media-secondary-color: transparent;
-            --media-menu-background: rgba(28, 28, 28, 0.95);
+            --media-menu-background: rgba(20, 20, 20, 0.85);
             --media-control-hover-background: var(--media-secondary-color);
-            --media-range-track-height: 3px;
-            --media-range-thumb-height: 13px;
-            --media-range-thumb-width: 13px;
-            --media-range-thumb-border-radius: 13px;
+            --media-range-track-height: 6px;
+            --media-range-thumb-height: 14px;
+            --media-range-thumb-width: 14px;
+            --media-range-thumb-border-radius: 14px;
             --media-preview-thumbnail-border: 2px solid #fff;
-            --media-preview-thumbnail-border-radius: 2px;
+            --media-preview-thumbnail-border-radius: 4px;
             --media-tooltip-display: none;
         }
 
@@ -101,6 +123,7 @@ const embedController = async (c) => {
             background: rgba(0, 0, 0, 0.3);
             z-index: 100;
             pointer-events: none;
+            backdrop-filter: blur(2px);
         }
         .loading-overlay.visible {
             display: flex;
@@ -131,47 +154,67 @@ const embedController = async (c) => {
         }
 
         .skip-button {
-            background: rgba(0, 0, 0, 0.8); border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer;
-            font-weight: 500; font-size: 14px; display: none; align-items: center;
-            gap: 8px; pointer-events: auto; margin-bottom: 10px;
+            background: rgba(20, 20, 20, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff; padding: 10px 24px; border-radius: 0px; cursor: pointer;
+            font-weight: 600; font-size: 14px; display: none; align-items: center;
+            gap: 10px; pointer-events: auto; margin-bottom: 12px;
+            /* backdrop-filter removed */
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .skip-container {
-             position: absolute; bottom: 60px; right: 20px; display: flex;
+             position: absolute; bottom: 80px; right: 24px; display: flex;
              flex-direction: column; align-items: flex-end; z-index: 20; pointer-events: none;
         }
 
         .skip-button.visible { display: flex; }
-        .skip-button:hover { background: rgba(255, 255, 255, 0.1); }
+        .skip-button:hover { 
+            background: rgba(40, 40, 40, 0.95); 
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
 
-        video { width: 100%; height: 100%; }
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain;
+            transition: object-fit 0.3s ease;
+        }
+        
+        /* Adaptive Ratio classes */
+        video.object-cover { object-fit: cover; }
+        video.object-contain { object-fit: contain; }
 
-        /* Subtitle Styling - Much smaller and positioned as overlay */
+        /* Subtitle Styling - Modern & Positioned Lower */
         video::cue {
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: rgba(0, 0, 0, 0.65);
             color: #ffffff;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
-            font-weight: 400;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-            line-height: 1.3;
-            padding: 2px 6px;
-            border-radius: 2px;
+            font-size: 16px;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 500;
+            line-height: 1.4;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         
         [mediaisfullscreen] video::cue {
-            font-size: 18px;
-            padding: 3px 7px;
+            font-size: 22px;
+            padding: 6px 14px;
         }
 
-        /* Position subtitles above controls - single display only */
+        /* Position subtitles lower on screen */
         video::-webkit-media-text-track-container {
-            bottom: 80px !important;
+            bottom: 60px !important;
+            transform: translateY(20px); 
         }
         
         [mediaisfullscreen] video::-webkit-media-text-track-container {
-            bottom: 100px !important;
+            bottom: 90px !important;
         }
         
         /* Hide media-chrome's default subtitle display to prevent duplicates */
@@ -180,250 +223,252 @@ const embedController = async (c) => {
         }
 
         media-controller[mediaisfullscreen] {
-          font-size: 17px; --media-range-thumb-height: 20px;
-          --media-range-thumb-width: 20px; --media-range-thumb-border-radius: 10px;
-          --media-range-track-height: 4px;
+          --media-range-thumb-height: 16px;
+          --media-range-thumb-width: 16px; 
+          --media-range-track-height: 8px;
         }
     
         .yt-button {
-          position: relative; display: inline-block; width: 36px; padding: 0 2px;
-          height: 100%; opacity: 0.9; transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);
+          position: relative; display: inline-flex; width: 40px; justify-content: center; align-items: center;
+          height: 100%; opacity: 0.9; transition: all 0.2s ease;
+          border-radius: 4px;
         }
-        [breakpointmd] .yt-button { width: 48px; }
-        [mediaisfullscreen] .yt-button { width: 54px; }
-    
-        .yt-button svg { height: 100%; width: 100%; fill: var(--media-primary-color, #fff); fill-rule: evenodd; }
-        .svg-shadow { stroke: #000; stroke-opacity: 0.15; stroke-width: 2px; fill: none; }
+        .yt-button:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+        [breakpointmd] .yt-button { width: 44px; }
+        
+        .yt-button svg { height: 24px; width: 24px; fill: var(--media-primary-color, #fff); }
         
         .yt-gradient-bottom {
-            padding-top: 37px; position: absolute; width: 100%; height: 170px;
-            bottom: 0; pointer-events: none; background-position: bottom; background-repeat: repeat-x;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAACqCAYAAABsziWkAAAAAXNSR0IArs4c6QAAAQVJREFUOE9lyNdHBQAAhfHb3nvvuu2997jNe29TJJEkkkgSSSSJJJJEEkkiifRH5jsP56Xz8PM5gcC/xfDEmjhKxEOCSaREEiSbFEqkQppJpzJMJiWyINvkUCIX8kw+JQqg0BRRxaaEEqVQZsopUQGVpooS1VBjglStqaNEPTSYRko0QbNpoUQrtJl2qsN0UqILuk0PJXqhz/RTYgAGzRA1bEYoMQpjZpwSExAyk5SYgmkzQ82aOUqEIWKilJiHBbNIiSVYhhVYhTVYhw3YhC3Yhh3YhT3YhwM4hCM4hhM4hTM4hwu4hCu4hhu4hTu4hwd4hCd4hhd4hTd4hw/4hC/4hh/4/QM2/id28uIEJAAAAABJRU5ErkJggg==');
+            padding-top: 37px; position: absolute; width: 100%; height: 200px;
+            bottom: 0; pointer-events: none; 
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
             z-index: 10;
         }
 
         media-settings-menu {
-            position: absolute; border-radius: 12px; right: 12px; bottom: 61px; z-index: 70;
-            will-change: width, height; text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-            transition: opacity 0.1s cubic-bezier(0, 0, 0.2, 1); user-select: none;
-            --media-settings-menu-min-width: 240px;
+            /* We replace this with our custom menu */
+            display: none; 
         }
-        [mediaisfullscreen] media-settings-menu {
-            --media-settings-menu-min-width: 320px; right: 24px; bottom: 70px;
-        }
-        media-settings-menu-item {
-            height: 44px; font-size: 14px; font-weight: 500;
-            padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: background 0.2s;
-        }
-        media-settings-menu-item:hover { background: rgba(255, 255, 255, 0.1); }
-        [mediaisfullscreen] media-settings-menu-item { font-size: 18px; height: 52px; }
         
         /* Progress bar highlights container */
         .progress-highlights {
             position: absolute;
-            bottom: 36px;
+            bottom: 38px;
             left: 0;
             width: 100%;
-            height: 5px;
+            height: 4px;
             z-index: 21;
             pointer-events: none;
         }
-        [breakpointmd] .progress-highlights { bottom: 47px; }
-        [mediaisfullscreen] .progress-highlights { bottom: 52.5px; height: 8px; }
+        [breakpointmd] .progress-highlights { bottom: 48px; }
+        [mediaisfullscreen] .progress-highlights { bottom: 52px; height: 6px; }
 
         media-time-range {
-            position: absolute; bottom: 36px; width: 100%; height: 5px; z-index: 20;
+            position: absolute; bottom: 38px; width: 100%; height: 4px; z-index: 20;
             overflow: visible !important;
-            --media-range-track-background: rgba(255, 255, 255, 0.2);
-            --media-range-track-pointer-background: rgba(255, 255, 255, 0.5);
-            --media-time-range-buffered-color: rgba(255, 255, 255, 0.4);
-            --media-range-bar-color: var(--media-accent-color, rgb(229, 9, 20));
+            --media-range-track-background: rgba(255, 255, 255, 0.15);
+            --media-range-track-pointer-background: rgba(255, 255, 255, 0.3);
+            --media-time-range-buffered-color: rgba(255, 255, 255, 0.25);
+            --media-range-bar-color: var(--media-accent-color, #e50914);
             --media-range-thumb-border-radius: 13px;
-            --media-range-thumb-background: var(--media-accent-color, #f00);
-            --media-range-thumb-transform: scale(0) translate(0%, 0%);
+            --media-range-thumb-background: var(--media-accent-color, #e50914);
+            --media-range-thumb-transform: scale(0);
+            transition: height 0.1s ease;
         }
         media-time-range:hover {
-            --media-range-track-height: 5px; --media-range-thumb-transform: scale(1) translate(0%, 0%);
+            height: 8px; --media-range-thumb-transform: scale(1);
         }
-        [breakpointmd] media-time-range { bottom: 47px; }
-        [mediaisfullscreen] media-time-range { bottom: 52.5px; height: 8px; }
-        [mediaisfullscreen] media-time-range:hover { --media-range-track-height: 8px; }
+        [breakpointmd] media-time-range { bottom: 48px; }
+        [mediaisfullscreen] media-time-range { bottom: 52px; height: 8px; }
+        [mediaisfullscreen] media-time-range:hover { height: 10px; }
 
         /* Intro/Outro highlights on progress bar - Enhanced chapter-style */
         .progress-highlights .intro-highlight, 
         .progress-highlights .outro-highlight {
             position: absolute !important;
-            height: 60% !important;
-            top: 20% !important;
-            background-color: #fdd253 !important;
-            border-radius: 2px !important;
-            pointer-events: none !important;
-            transition: height 0.2s ease !important;
-            display: block !important;
-        }
-        
-        .progress-highlights:hover .intro-highlight,
-        .progress-highlights:hover .outro-highlight {
             height: 100% !important;
             top: 0 !important;
+            background-color: rgba(253, 210, 83, 0.9) !important;
+            pointer-events: none !important;
+            z-index: 22;
         }
-
+        
         media-control-bar {
-            position: absolute; height: 36px; line-height: 36px;
-            bottom: 0; left: 12px; right: 12px; z-index: 20;
+            position: absolute; height: 48px; display: flex; align-items: center;
+            bottom: 0; left: 16px; right: 16px; z-index: 20;
         }
-        [breakpointmd] media-control-bar { height: 48px; line-height: 48px; }
-        [mediaisfullscreen] media-control-bar { height: 54px; line-height: 54px; }
-
-        media-play-button { 
-            --media-button-icon-width: 34px; 
-            padding: 6px 10px; 
-            padding-top: 6px !important;
-        }
-        media-play-button #icon-play, media-play-button #icon-pause { filter: drop-shadow(0 0 2px #00000080); }
-        media-play-button :is(#play-p1, #play-p2, #pause-p1, #pause-p2) { transition: clip-path 0.25s ease-in; }
-        media-play-button:not([mediapaused]) #play-p2 { transition: clip-path 0.35s ease-in; }
-        media-play-button :is(#pause-p1, #pause-p2), media-play-button[mediapaused] :is(#play-p1, #play-p2) { clip-path: inset(0); }
-        media-play-button #play-p1 { clip-path: inset(0 100% 0 0); }
-        media-play-button #play-p2 { clip-path: inset(0 20% 0 100%); }
-        media-play-button[mediapaused] #pause-p1 { clip-path: inset(50% 0 50% 0); }
-        media-play-button[mediapaused] #pause-p2 { clip-path: inset(50% 0 50% 0); }
-
-        media-mute-button :is(#icon-muted, #icon-volume) { transition: clip-path 0.3s ease-out; }
-        media-mute-button #icon-muted { clip-path: inset(0 0 100% 0); }
-        media-mute-button[mediavolumelevel='off'] #icon-muted { clip-path: inset(0); }
-        media-mute-button #icon-volume { clip-path: inset(0); }
-        media-mute-button[mediavolumelevel='off'] #icon-volume { clip-path: inset(100% 0 0 0); }
+        [breakpointmd] media-control-bar { height: 56px; }
         
-        /* Make volume icon smaller and move down */
+        media-play-button { display: none; } /* Removed from control bar */
+
         media-mute-button {
-            padding-top: 8px !important;
+            padding: 0 8px;
         }
         
-        media-mute-button svg {
-            width: 20px !important;
-            height: 20px !important;
-        }
-        
-        media-volume-range { height: 36px; --media-range-track-background: rgba(255, 255, 255, 0.2); }
-        media-mute-button + media-volume-range { width: 0; overflow: hidden; transition: width 0.2s ease-in; }
+        media-volume-range { height: 4px; border-radius: 2px; --media-range-track-background: rgba(255, 255, 255, 0.2); }
+        media-mute-button + media-volume-range { width: 0; overflow: hidden; transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); margin-left: 0; }
         media-mute-button:hover + media-volume-range, media-mute-button:focus + media-volume-range,
         media-mute-button:focus-within + media-volume-range, media-volume-range:hover,
-        media-volume-range:focus, media-volume-range:focus-within { width: 70px; }
+        media-volume-range:focus, media-volume-range:focus-within { width: 80px; margin-left: 8px; }
 
-        media-time-display { padding-top: 6px; padding-bottom: 6px; font-size: 13px; }
-        [mediaisfullscreen] media-time-display { font-size: 20px; }
+        media-time-display { 
+            padding: 0 12px; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; 
+            color: rgba(255,255,255,0.9);
+        }
         .control-spacer { flex-grow: 1; }
 
         media-captions-button { 
-            position: relative;
-            padding-top: 10px !important;
+            --media-button-icon-width: 22px;
         }
         
-        /* Make CC button smaller */
-        media-captions-button svg {
-            width: 20px !important;
-            height: 20px !important;
-            transition: opacity 0.2s ease;
-        }
-        
-        media-captions-button .caption-on-icon {
-            display: none;
-        }
-        
-        media-captions-button .caption-off-icon {
-            display: block;
-            opacity: 0.5;
-        }
-        
-        /* When captions are active */
-        media-captions-button[aria-checked='true'] .caption-on-icon {
-            display: block;
-        }
-        
-        media-captions-button[aria-checked='true'] .caption-off-icon {
-            display: none;
-        }
-        
-        /* CC button active state indicator */
         media-captions-button[aria-checked='true']::after {
             content: '';
             position: absolute;
-            bottom: 8px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%;
-            height: 3px;
+            width: 4px;
+            height: 4px;
             background: #e50914;
-            border-radius: 2px;
+            border-radius: 50%;
         }
 
-        media-settings-menu-button svg { transition: transform 0.1s cubic-bezier(0.4, 0, 1, 1); transform: rotateZ(0deg); }
-        media-settings-menu-button[aria-expanded='true'] svg { transform: rotateZ(30deg); }
-
-        /* Seek button labels */
-        media-seek-backward-button::part(display),
-        media-seek-forward-button::part(display) {
-            font-size: 12px;
-        }
+        media-settings-menu-button svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        media-settings-menu-button[aria-expanded='true'] svg { transform: rotate(90deg); }
 
         .mobile-centered-controls {
             display: flex; align-self: stretch; align-items: center; flex-flow: row nowrap;
-            justify-content: center; margin: -5% auto 0; width: 100%; gap: 1rem;
+            justify-content: center; margin: 0 auto; width: 100%; height: 100%; 
+            pointer-events: none;
         }
-        .mobile-centered-controls [role='button'] {
-            --media-icon-color: var(--media-primary-color, #fff);
-            --media-button-icon-width: 36px; --media-button-icon-height: 36px;
-            user-select: none;
+        .mobile-centered-controls > * { pointer-events: auto; }
+        
+        .mobile-centered-controls media-play-button { 
+            display: flex;
+            width: 72px; height: 72px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            /* backdrop-filter removed */
+            transition: all 0.2s ease;
+            --media-button-icon-width: 32px;
+            border: 2px solid rgba(255,255,255,0.1);
         }
-        .mobile-centered-controls media-play-button { width: 5rem; }
-        .mobile-centered-controls :is(media-seek-backward-button, media-seek-forward-button) { width: 3rem; padding: 0.5rem; }
-        @media (width >= 768px) { .mobile-centered-controls { display: none; } }
+        .mobile-centered-controls media-play-button:hover {
+            background: rgba(229, 9, 20, 1);
+            transform: scale(1.1);
+            border-color: transparent;
+        }
 
-        /* Custom menu styling - improved */
+        /* NEXT.JS STYLE SETTINGS MENU - Glassmorphism & Modern */
         .custom-menu {
-            display: none; position: absolute; right: 12px; bottom: 61px;
-            background: rgba(20, 20, 20, 0.96); border-radius: 10px;
-            min-width: 240px; max-height: 420px; overflow-y: auto;
-            z-index: 80; backdrop-filter: blur(30px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: none; position: absolute; right: 20px; bottom: 70px;
+            background: rgba(15, 15, 15, 0.85); /* Dark semi-transparent background */
+            border-radius: 12px;
+            width: 280px; 
+            max-height: 400px; 
+            overflow: hidden;
+            z-index: 100; 
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+            font-family: 'Inter', sans-serif;
+            transform-origin: bottom right;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+            pointer-events: none;
         }
-        .custom-menu.active { display: block; animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        
+        .custom-menu.active { 
+            display: block; 
+            opacity: 1; 
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
         }
+
+        .menu-scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+        .menu-scroll-container::-webkit-scrollbar { width: 4px; }
+        .menu-scroll-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        /* Menu Header */
+        .menu-header {
+            padding: 14px 16px; 
+            font-weight: 600; 
+            font-size: 14px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex; align-items: center; gap: 12px; 
+            background: rgba(255, 255, 255, 0.02);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .menu-header.clickable { cursor: pointer; }
+        .menu-header.clickable:hover { background: rgba(255, 255, 255, 0.06); }
+        .back-icon { font-size: 14px; opacity: 0.7; }
+        
+        /* Menu Item Rows */
         .menu-item {
-            padding: 12px 16px; cursor: pointer; font-size: 14px;
-            display: flex; align-items: center; justify-content: space-between;
-            transition: all 0.2s ease; color: #e0e0e0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            font-weight: 400;
+            padding: 12px 16px; 
+            cursor: pointer; 
+            font-size: 14px;
+            display: flex; align-items: center; 
+            justify-content: space-between;
+            color: #e5e5e5;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
         }
         .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-        .menu-item.active { 
-            color: #4fc3f7; 
-            background: rgba(79, 195, 247, 0.12);
-            font-weight: 500;
+        
+        .menu-item:hover { 
+            background: rgba(255, 255, 255, 0.08); 
+            color: #fff; 
+            padding-left: 20px; /* Slight slide effect */
         }
-        .menu-item.active::after {
-            content: '✓';
+        
+        /* Left side content (Icon + Label) */
+        .item-left { display: flex; align-items: center; gap: 12px; }
+        .item-icon { 
+            display: flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; opacity: 0.8;
+            font-size: 18px; /* For React Icons */
+        }
+        
+        /* Right side content (Value + Chevron) */
+        .item-right { display: flex; align-items: center; gap: 8px; }
+        .item-value { 
+            font-size: 13px; color: rgba(255, 255, 255, 0.5); 
+            font-weight: 400; 
+            max-width: 100px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .item-chevron { font-size: 12px; opacity: 0.4; }
+
+        /* Selection styling for submenu items */
+        .sub-menu-item {
+            padding: 12px 16px 12px 48px; /* Indent for checkmark space */
+            position: relative;
+        }
+        .sub-menu-item .checkmark {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: #e50914; /* Brand color */
+            opacity: 0; 
             font-size: 16px;
-            font-weight: 600;
-            color: #4fc3f7;
+            transition: all 0.2s ease;
         }
-        .menu-header {
-            padding: 14px 16px; font-weight: 600; font-size: 15px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            display: flex; align-items: center; gap: 8px; cursor: pointer;
-            background: rgba(255, 255, 255, 0.03);
-            position: sticky; top: 0; z-index: 1;
-            color: #fff;
+        .sub-menu-item.active { 
+            background: rgba(229, 9, 20, 0.1); 
+            color: #fff; font-weight: 500;
         }
-        .menu-header:hover { background: rgba(255, 255, 255, 0.06); }
+        .sub-menu-item.active .checkmark { opacity: 1; }
+        .sub-menu-item:hover { background: rgba(255,255,255,0.08); }
     </style>
 </head>
 <body>
@@ -462,20 +507,7 @@ const embedController = async (c) => {
         </media-time-range>
 
         <media-control-bar>
-          <media-play-button mediapaused class="yt-button">
-            <svg slot="icon" viewBox="0 0 36 36">
-              <g id="icon-play">
-                <g id="play-icon">
-                  <path id="play-p1" d="M18.5 14L12 10V26L18.5 22V14Z" />
-                  <path id="play-p2" d="M18 13.6953L25 18L18 22.3086V13.6953Z" />
-                </g>
-                <g id="pause-icon">
-                  <path id="pause-p1" d="M16 10H12V26H16V10Z" />
-                  <path id="pause-p2" d="M21 10H25V26H21V10Z" />
-                </g>
-              </g>
-            </svg>
-          </media-play-button>
+
 
           <media-mute-button class="yt-button">
             <svg slot="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -490,14 +522,18 @@ const embedController = async (c) => {
           <media-time-display showduration></media-time-display>
           <span class="control-spacer"></span>
 
-          <media-captions-button class="yt-button">
-             <!-- Caption ON icon -->
-             <svg slot="icon" class="caption-on-icon" viewBox="0 16 240 240" xmlns="http://www.w3.org/2000/svg">
-               <path d="M215,40H25c-2.7,0-5,2.2-5,5v150c0,2.7,2.2,5,5,5h190c2.7,0,5-2.2,5-5V45C220,42.2,217.8,40,215,40z M108.1,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C90.4,141.7,102,143.5,108.1,137.7z M152.9,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C135.2,141.7,146.8,143.5,152.9,137.7z" fill="#fff"/>
-             </svg>
-             <!-- Caption OFF icon -->
-             <svg slot="icon" class="caption-off-icon" viewBox="0 16 240 240" xmlns="http://www.w3.org/2000/svg">
-               <path d="M99.4,97.8c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6c0,9.6,11.6,11.4,17.7,5.5c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9C107.9,100,103.8,97.8,99.4,97.8z M144.1,97.8c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6c0,9.6,11.6,11.4,17.7,5.5c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9C152.6,100,148.5,97.8,144.1,97.8L144.1,97.8z M200,60v120H40V60H200 M215,40H25c-2.7,0-5,2.2-5,5v150c0,2.7,2.2,5,5,5h190c2.7,0,5-2.2,5-5V45C220,42.2,217.8,40,215,40z" fill="#fff"/>
+          <!-- Seek Buttons with React Icons -->
+          <media-seek-backward-button seek-offset="10" class="yt-button">
+            ${renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px' } })}
+          </media-seek-backward-button>
+          
+          <media-seek-forward-button seek-offset="10" class="yt-button">
+            ${renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } })}
+          </media-seek-forward-button>
+
+             <svg slot="icon" class="caption-off-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+               <path d="M3.708 7.755c0-1.111.488-1.753 1.319-1.753.681 0 1.138.47 1.186 1.107H7.36V7c-.052-1.186-1.024-2-2.342-2C3.414 5 2.5 6.05 2.5 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114H6.213c-.048.615-.496 1.05-1.186 1.05-.84 0-1.319-.62-1.319-1.727zm6.14 0c0-1.111.488-1.753 1.318-1.753.682 0 1.139.47 1.187 1.107H13.5V7c-.053-1.186-1.024-2-2.342-2C9.554 5 8.64 6.05 8.64 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114h-1.147c-.048.615-.497 1.05-1.187 1.05-.839 0-1.318-.62-1.318-1.727z" fill="#fff"/>
+               <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" fill="#fff"/>
              </svg>
           </media-captions-button>
 
@@ -508,10 +544,7 @@ const embedController = async (c) => {
           </button>
 
           <media-pip-button class="yt-button">
-             <svg slot="icon" viewBox="0 0 36 36">
-               <path d="M25 17H17V23H25V17Z" fill="#fff"/>
-               <path d="M7 11C7 9.89543 7.89545 9 9 9H27.0161C28.1207 9 29.0161 9.89543 29.0161 11V24.8837C29.0161 25.9883 28.1207 26.8837 27.0162 26.8837H9C7.89545 26.8837 7 25.9883 7 24.8837V11ZM9 11H27V25H9V11Z" fill="#fff"/>
-             </svg>
+            ${renderIcon(BsPip, { style: { width: '24px', height: '24px' } })}
           </media-pip-button>
 
           <media-fullscreen-button class="yt-button">
@@ -525,13 +558,13 @@ const embedController = async (c) => {
         </media-control-bar>
 
         <div class="mobile-centered-controls" slot="centered-chrome">
-          <media-seek-backward-button seek-offset="10"></media-seek-backward-button>
           <media-play-button></media-play-button>
-          <media-seek-forward-button seek-offset="10"></media-seek-forward-button>
         </div>
       </media-controller>
 
+
     <script>
+        const SVGs = ${JSON.stringify(icons)};
         const intro = ${JSON.stringify(intro || { start: 0, end: 0 })};
         const outro = ${JSON.stringify(outro || { start: 0, end: 0 })};
         const episodeType = '${episodeType}';
@@ -593,7 +626,7 @@ const embedController = async (c) => {
                 startLevel: -1,
                 abrEwmaDefaultEstimate: 500000,
                 // Disable HLS.js native subtitle rendering to prevent duplicates
-                renderTextTracksNatively: true,
+                renderTextTracksNatively: false,
                 enableWorker: true
             });
             
@@ -739,25 +772,35 @@ const embedController = async (c) => {
             const duration = video.duration;
 
             // Add intro highlight
-            if (intro.end > 0 && intro.start < duration) {
-                const introDiv = document.createElement('div');
-                introDiv.className = 'intro-highlight';
-                const startPercent = (intro.start / duration) * 100;
-                const widthPercent = ((intro.end - intro.start) / duration) * 100;
-                introDiv.style.left = startPercent + '%';
-                introDiv.style.width = widthPercent + '%';
-                highlightsContainer.appendChild(introDiv);
+            if (intro.end > 0) {
+                const start = Math.max(0, intro.start);
+                const end = Math.min(intro.end, duration);
+                
+                if (start < end) {
+                    const introDiv = document.createElement('div');
+                    introDiv.className = 'intro-highlight';
+                    const startPercent = (start / duration) * 100;
+                    const widthPercent = ((end - start) / duration) * 100;
+                    introDiv.style.left = startPercent + '%';
+                    introDiv.style.width = widthPercent + '%';
+                    highlightsContainer.appendChild(introDiv);
+                }
             }
 
             // Add outro highlight
-            if (outro.end > 0 && outro.start < duration) {
-                const outroDiv = document.createElement('div');
-                outroDiv.className = 'outro-highlight';
-                const startPercent = (outro.start / duration) * 100;
-                const widthPercent = ((outro.end - outro.start) / duration) * 100;
-                outroDiv.style.left = startPercent + '%';
-                outroDiv.style.width = widthPercent + '%';
-                highlightsContainer.appendChild(outroDiv);
+            if (outro.end > 0) {
+                const start = Math.max(0, outro.start);
+                const end = Math.min(outro.end, duration);
+                
+                if (start < end) {
+                    const outroDiv = document.createElement('div');
+                    outroDiv.className = 'outro-highlight';
+                    const startPercent = (start / duration) * 100;
+                    const widthPercent = ((end - start) / duration) * 100;
+                    outroDiv.style.left = startPercent + '%';
+                    outroDiv.style.width = widthPercent + '%';
+                    highlightsContainer.appendChild(outroDiv);
+                }
             }
         }
 
@@ -767,41 +810,86 @@ const embedController = async (c) => {
 
         // Settings menu logic
         let menuState = 'main';
+        let currentAspectRatio = 'contain'; // 'contain' or 'cover'
         
+        // Helper to get formatted aspect ratio label
+        function getAspectRatioLabel() {
+            return currentAspectRatio === 'contain' ? 'Original' : 'Zoom to Fill';
+        }
+
+        // Helper to toggle aspect ratio
+        function setAspectRatio(ratio) {
+            currentAspectRatio = ratio;
+            
+            // Remove all ratio classes first
+            video.classList.remove('object-contain', 'object-cover');
+            
+            // Add new class
+            video.classList.add('object-' + ratio);
+            
+            // Update menu if open
+            if (menuState === 'main') showMainMenu();
+            if (menuState === 'ratio') showAspectRatioMenu();
+        }
+
+        function renderMenuHeader(title, backAction = null) {
+            let html = '<div class="menu-header' + (backAction ? ' clickable' : '') + '" ' + (backAction ? 'data-action="' + backAction + '"' : '') + '>';
+            if (backAction) {
+                html += '<span class="back-icon">' + SVGs.back + '</span>';
+            }
+            html += '<span>' + title + '</span>';
+            html += '</div>';
+            return html;
+        }
+
+        function renderMenuItem(iconString, label, value = '', action) {
+            return '<div class="menu-item" data-action="' + action + '">' +
+                    '<div class="item-left">' +
+                        '<span class="item-icon">' + iconString + '</span>' +
+                        '<span>' + label + '</span>' +
+                    '</div>' +
+                    '<div class="item-right">' +
+                        '<span class="item-value">' + value + '</span>' +
+                        '<span class="item-chevron">' + SVGs.chevron + '</span>' +
+                    '</div>' +
+                '</div>';
+        }
+        
+        function renderSubMenuItem(label, isActive, actionValue) {
+            return '<div class="menu-item sub-menu-item' + (isActive ? ' active' : '') + '" data-value="' + actionValue + '">' +
+                    '<span class="checkmark">' + SVGs.check + '</span>' +
+                    '<span>' + label + '</span>' +
+                '</div>';
+        }
+
         function showMainMenu() {
             menuState = 'main';
-            const qualityLabel = currentQuality === -1 ? 'Auto' : (hls?.levels[currentQuality]?.height + 'p' || 'Auto');
+            const qualityLabel = currentQuality === -1 ? 'Auto' : (hls?.levels?.[currentQuality]?.height ? hls.levels[currentQuality].height + 'p' : 'Auto');
             const speedLabel = currentSpeed + 'x';
             const subLabel = subtitles.length === 0 ? 'None' : (currentSubtitle !== null ? subtitles[currentSubtitle]?.label : 'Off');
+            const ratioLabel = getAspectRatioLabel();
             
+            let html = '<div class="menu-scroll-container">';
+            html += renderMenuHeader('Settings');
+            html += '<div class="menu-content">';
             
-            let html = '';
-            html += '<div class="menu-item" data-action="quality">';
-            html += '<span>Quality</span>';
-            html += '<span style="opacity: 0.7">' + qualityLabel + '</span>';
-            html += '</div>';
-            html += '<div class="menu-item" data-action="speed">';
-            html += '<span>Playback Speed</span>';
-            html += '<span style="opacity: 0.7">' + speedLabel + '</span>';
-            html += '</div>';
-            html += '<div class="menu-item" data-action="subtitle">';
-            html += '<span>Subtitles</span>';
-            html += '<span style="opacity: 0.7">' + subLabel + '</span>';
-            html += '</div>';
+            html += renderMenuItem(SVGs.gear, 'Quality', qualityLabel, 'quality');
+            html += renderMenuItem(SVGs.speed, 'Playback Speed', speedLabel, 'speed');
+            html += renderMenuItem(SVGs.ratio, 'Adaptive Ratio', ratioLabel, 'ratio');
+            html += renderMenuItem(SVGs.cc, 'Subtitles', subLabel, 'subtitle');
+            
+            html += '</div></div>';
             
             settingsMenu.innerHTML = html;
             
             // Add event listeners
-            const menuItems = settingsMenu.querySelectorAll('.menu-item');
-            
-            menuItems.forEach(item => {
+            settingsMenu.querySelectorAll('.menu-item').forEach(item => {
                 const action = item.getAttribute('data-action');
-                
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    
                     if (action === 'quality') showQualityMenu();
                     else if (action === 'speed') showSpeedMenu();
+                    else if (action === 'ratio') showAspectRatioMenu();
                     else if (action === 'subtitle') showSubtitleMenu();
                 });
             });
@@ -809,30 +897,35 @@ const embedController = async (c) => {
 
         function showQualityMenu() {
             menuState = 'quality';
-            if (!hls) {
-                return;
-            }
+            if (!hls) return;
             
+            let html = '<div class="menu-scroll-container">';
+            html += renderMenuHeader('Quality', 'back');
+            html += '<div class="menu-content">';
             
-            let html = '<div class="menu-header" data-action="back">← Quality</div>';
-            html += '<div class="menu-item' + (currentQuality === -1 ? ' active' : '') + '" data-quality="-1">Auto</div>';
+            html += renderSubMenuItem('Auto', currentQuality === -1, '-1');
             
-            hls.levels.forEach((level, index) => {
-                html += '<div class="menu-item' + (currentQuality === index ? ' active' : '') + '" data-quality="' + index + '">' + level.height + 'p</div>';
+            // Sort levels by height (resolution) descending
+            const levels = hls.levels.map((l, i) => ({ ...l, originalIndex: i })).sort((a, b) => b.height - a.height);
+            
+            levels.forEach((level) => {
+                html += renderSubMenuItem(level.height + 'p', currentQuality === level.originalIndex, level.originalIndex);
             });
+            
+            html += '</div></div>';
             
             settingsMenu.innerHTML = html;
             
-            // Add event listeners
-            settingsMenu.querySelector('[data-action="back"]').addEventListener('click', () => {
-                showMainMenu();
-            });
+            // Back button
+            settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
-            settingsMenu.querySelectorAll('[data-quality]').forEach(item => {
+            // Quality options
+            settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const level = parseInt(item.getAttribute('data-quality'));
+                    const level = parseInt(item.getAttribute('data-value'));
                     setQuality(level);
+                    showMainMenu(); // Auto-back on selection
                 });
             });
         }
@@ -841,20 +934,52 @@ const embedController = async (c) => {
             menuState = 'speed';
             const speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
             
-            let html = '<div class="menu-header" data-action="back">← Playback Speed</div>';
+            let html = '<div class="menu-scroll-container">';
+            html += renderMenuHeader('Playback Speed', 'back');
+            html += '<div class="menu-content">';
+            
             speeds.forEach(speed => {
-                html += '<div class="menu-item' + (currentSpeed === speed ? ' active' : '') + '" data-speed="' + speed + '">' + speed + 'x</div>';
+                html += renderSubMenuItem(speed === 1 ? 'Normal' : speed + 'x', currentSpeed === speed, speed);
             });
+            
+            html += '</div></div>';
             
             settingsMenu.innerHTML = html;
             
-            // Add event listeners
-            settingsMenu.querySelector('[data-action="back"]').addEventListener('click', showMainMenu);
-            settingsMenu.querySelectorAll('[data-speed]').forEach(item => {
+            settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
+            
+            settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const speed = parseFloat(item.getAttribute('data-speed'));
+                    const speed = parseFloat(item.getAttribute('data-value'));
                     setSpeed(speed);
+                    showMainMenu();
+                });
+            });
+        }
+
+        function showAspectRatioMenu() {
+            menuState = 'ratio';
+            
+            let html = '<div class="menu-scroll-container">';
+            html += renderMenuHeader('Adaptive Ratio', 'back');
+            html += '<div class="menu-content">';
+            
+            html += renderSubMenuItem('Original (Contain)', currentAspectRatio === 'contain', 'contain');
+            html += renderSubMenuItem('Zoom to Fill (Cover)', currentAspectRatio === 'cover', 'cover');
+            
+            html += '</div></div>';
+            
+            settingsMenu.innerHTML = html;
+            
+            settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
+            
+            settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const ratio = item.getAttribute('data-value');
+                    setAspectRatio(ratio);
+                    showMainMenu();
                 });
             });
         }
@@ -862,38 +987,33 @@ const embedController = async (c) => {
         function showSubtitleMenu() {
             menuState = 'subtitle';
             
-            let html = '<div class="menu-header" data-action="back">← Subtitles</div>';
+            let html = '<div class="menu-scroll-container">';
+            html += renderMenuHeader('Subtitles', 'back');
+            html += '<div class="menu-content">';
             
-            if (subtitles.length === 0) {
-                const message = episodeType === 'dub' 
-                    ? 'No subtitles available' 
-                    : 'No subtitles available';
-                html += '<div class="menu-item" style="opacity: 0.5; cursor: default;">' + message + '</div>';
-            } else {
-                html += '<div class="menu-item' + (currentSubtitle === null ? ' active' : '') + '" data-subtitle="null">Off</div>';
-                
-                subtitles.forEach((track, index) => {
-                    // Only show subtitles that have a label
-                    if (track.label) {
-                        html += '<div class="menu-item' + (currentSubtitle === index ? ' active' : '') + '" data-subtitle="' + index + '">' + track.label + '</div>';
-                    }
-                });
-            }
+            html += renderSubMenuItem('Off', currentSubtitle === null, 'off');
+            
+            subtitles.forEach((track, index) => {
+                html += renderSubMenuItem(track.label, currentSubtitle === index, index);
+            });
+            
+            html += '</div></div>';
             
             settingsMenu.innerHTML = html;
             
-            // Add event listeners
-            settingsMenu.querySelector('[data-action="back"]').addEventListener('click', showMainMenu);
+            settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
-            if (subtitles.length > 0) {
-                settingsMenu.querySelectorAll('[data-subtitle]').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const subIndex = item.getAttribute('data-subtitle');
-                        setSubtitle(subIndex === 'null' ? null : parseInt(subIndex));
-                    });
+            settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let value = item.getAttribute('data-value');
+                    if (value !== 'off') value = parseInt(value);
+                    else value = null; // null represents 'Off'
+                    
+                    setSubtitle(value);
+                    showMainMenu();
                 });
-            }
+            });
         }
 
         function setQuality(level) {
