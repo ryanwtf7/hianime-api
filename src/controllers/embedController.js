@@ -240,6 +240,9 @@ const embedController = async (c) => {
         [breakpointmd] .yt-button { width: 44px; }
         
         .yt-button svg { height: 24px; width: 24px; fill: var(--media-primary-color, #fff); }
+        #settings-btn { width: 28px !important; }
+        #settings-btn svg { height: 16px !important; width: 16px !important; }
+
         /* Comprehensive border/outline removal */
         * { outline: none !important; }
         button, button *, svg, svg * { outline: none !important; border: none !important; box-shadow: none !important; }
@@ -347,7 +350,7 @@ const embedController = async (c) => {
         media-mute-button + media-volume-range { width: 0; overflow: hidden; transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); margin-left: 0; }
         media-mute-button:hover + media-volume-range, media-mute-button:focus + media-volume-range,
         media-mute-button:focus-within + media-volume-range, media-volume-range:hover,
-        media-volume-range:focus, media-volume-range:focus-within { width: 100px; margin-left: 8px; }
+        media-volume-range:focus, media-volume-range:focus-within { width: 120px; margin-left: 8px; }
 
         media-time-display { 
             padding: 0 12px; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; 
@@ -369,12 +372,12 @@ const embedController = async (c) => {
         
         .mobile-centered-controls media-play-button { 
             display: flex;
-            width: 140px;
-            height: 140px;
+            width: 160px;
+            height: 160px;
             background: transparent !important;
             border-radius: 50%;
             transition: opacity 0.2s ease;
-            --media-button-icon-width: 100px;
+            --media-button-icon-width: 120px;
             border: none !important;
             opacity: 0.9;
         }
@@ -393,8 +396,8 @@ const embedController = async (c) => {
         @media (max-width: 768px) {
             .mobile-centered-controls media-play-button { 
                 width: 80px; 
-                height: 100px;
-                --media-button-icon-width: 80px;
+                height: 120px;
+                --media-button-icon-width: 96px;
             }
             
             .skip-container {
