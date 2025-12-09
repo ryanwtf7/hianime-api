@@ -258,14 +258,14 @@ const embedController = async (c) => {
             left: 0;
             width: 100%;
             height: 4px;
-            z-index: 21;
+            z-index: 15;
             pointer-events: none;
         }
         [breakpointmd] .progress-highlights { bottom: 50px; }
         [mediaisfullscreen] .progress-highlights { bottom: 54px; height: 6px; }
 
         media-time-range {
-            position: absolute; bottom: 40px; width: 100%; height: 4px; z-index: 20;
+            position: absolute; bottom: 40px; width: 100%; height: 4px; z-index: 30;
             overflow: visible !important;
             --media-range-track-background: rgba(255, 255, 255, 0.2);
             --media-range-track-pointer-background: rgba(255, 255, 255, 0.35);
@@ -290,12 +290,12 @@ const embedController = async (c) => {
             top: 0 !important;
             background-color: rgba(255, 193, 7, 0.85) !important;
             pointer-events: none !important;
-            z-index: 22;
+            z-index: 16;
         }
         
         media-control-bar {
             position: absolute; height: 48px; display: flex; align-items: center;
-            bottom: 0; left: 16px; right: 16px; z-index: 20;
+            bottom: 0; left: 16px; right: 16px; z-index: 30;
         }
         [breakpointmd] media-control-bar { height: 56px; }
         
