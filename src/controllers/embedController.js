@@ -102,7 +102,8 @@ const embedController = async (c) => {
             -webkit-font-smoothing: antialiased;
             --media-secondary-color: transparent;
             --media-menu-background: rgba(20, 20, 20, 0.85);
-            --media-control-hover-background: var(--media-secondary-color);
+            --media-control-hover-background: transparent;
+            --media-control-background: transparent;
             --media-range-track-height: 6px;
             --media-range-thumb-height: 14px;
             --media-range-thumb-width: 14px;
@@ -225,12 +226,16 @@ const embedController = async (c) => {
     
         .yt-button {
           position: relative; display: inline-flex; width: 40px; justify-content: center; align-items: center;
-          height: 100%; opacity: 0.9; transition: all 0.2s ease;
-          border-radius: 4px;
+          height: 100%; opacity: 0.9; transition: opacity 0.2s ease;
+          border-radius: 0;
+          background: none !important;
         }
         .yt-button:hover { 
             opacity: 1; 
-            background: rgba(255,255,255,0.15);
+            background: none !important;
+        }
+        .yt-button:active {
+            background: none !important;
         }
         [breakpointmd] .yt-button { width: 44px; }
         
@@ -340,24 +345,32 @@ const embedController = async (c) => {
         
         .mobile-centered-controls media-play-button { 
             display: flex;
-            width: 64px; height: 64px;
-            background: rgba(0, 0, 0, 0.7);
+            width: 80px;
+            height: 80px;
+            background: transparent !important;
             border-radius: 50%;
-            transition: all 0.2s ease;
-            --media-button-icon-width: 28px;
-            border: 2px solid rgba(255,255,255,0.2);
+            transition: opacity 0.2s ease;
+            --media-button-icon-width: 36px;
+            border: none !important;
+            opacity: 0.9;
         }
         .mobile-centered-controls media-play-button:hover {
-            background: rgba(0, 0, 0, 0.85);
-            transform: scale(1.08);
-            border-color: rgba(255,255,255,0.4);
+            background: transparent !important;
+            transform: none;
+            border: none !important;
+            opacity: 1;
+        }
+        .mobile-centered-controls media-play-button:active {
+            background: transparent !important;
+            transform: none;
+            border: none !important;
         }
         
         @media (max-width: 768px) {
             .mobile-centered-controls media-play-button { 
-                width: 56px; 
-                height: 56px;
-                --media-button-icon-width: 24px;
+                width: 70px; 
+                height: 70px;
+                --media-button-icon-width: 32px;
             }
             
             .skip-container {
