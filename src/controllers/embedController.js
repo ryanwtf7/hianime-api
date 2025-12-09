@@ -240,6 +240,44 @@ const embedController = async (c) => {
         [breakpointmd] .yt-button { width: 44px; }
         
         .yt-button svg { height: 24px; width: 24px; fill: var(--media-primary-color, #fff); }
+        /* Comprehensive border/outline removal */
+        * { outline: none !important; }
+        button, button *, svg, svg * { outline: none !important; border: none !important; box-shadow: none !important; }
+        media-controller *, [class*="button"] *, [class*="control"] * { outline: none !important; border: none !important; box-shadow: none !important; }
+        .yt-button svg, media-play-button svg, media-mute-button svg, media-pip-button svg, media-fullscreen-button svg, media-seek-backward-button svg, media-seek-forward-button svg { outline: none !important; border: none !important; box-shadow: none !important; }
+        media-play-button, media-mute-button, media-pip-button, media-fullscreen-button, media-seek-backward-button, media-seek-forward-button { outline: none !important; border: none !important; box-shadow: none !important; }
+        media-play-button:focus, media-mute-button:focus, media-pip-button:focus, media-fullscreen-button:focus, media-seek-backward-button:focus, media-seek-forward-button:focus { outline: none !important; border: none !important; box-shadow: none !important; }
+        /* Super aggressive focus/active/click state removal */
+        *:focus, *:active, *:focus-visible, *:focus-within { outline: none !important; border: none !important; box-shadow: none !important; }
+        button:focus, button:active, button:focus-visible { outline: none !important; border: none !important; box-shadow: none !important; -webkit-tap-highlight-color: transparent !important; }
+        media-controller *:focus, media-controller *:active { outline: none !important; border: none !important; box-shadow: none !important; }
+        [class*="button"]:focus, [class*="button"]:active { outline: none !important; border: none !important; box-shadow: none !important; }
+        media-play-button:focus, media-play-button:active, media-mute-button:focus, media-mute-button:active,
+        media-pip-button:focus, media-pip-button:active, media-fullscreen-button:focus, media-fullscreen-button:active,
+        media-seek-backward-button:focus, media-seek-backward-button:active, media-seek-forward-button:focus, media-seek-forward-button:active {
+            outline: 0 !important; border: 0 !important; box-shadow: none !important;
+        }
+        .yt-button:focus, .yt-button:active, .yt-button:focus-visible { outline: 0 !important; border: 0 !important; box-shadow: none !important; }
+        /* Strip ALL default button styling - nuclear option */
+        button, [role="button"], input[type="button"] {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Remove ALL possible borders and outlines from media-chrome shadow DOM */
+        media-controller::part(button) { outline: none !important; border: none !important; box-shadow: none !important; }
+        media-play-button::part(button), media-mute-button::part(button), 
+        media-seek-backward-button::part(button), media-seek-forward-button::part(button),
+        media-pip-button::part(button), media-fullscreen-button::part(button) {
+            outline: 0 !important; border: 0 !important; box-shadow: none !important;
+        }
+
+
+
         
         .yt-gradient-bottom {
             padding-top: 37px; position: absolute; width: 100%; height: 180px;
@@ -254,15 +292,15 @@ const embedController = async (c) => {
         
         .progress-highlights {
             position: absolute;
-            bottom: 40px;
+            bottom: 60px;
             left: 0;
             width: 100%;
             height: 4px;
             z-index: 15;
             pointer-events: none;
         }
-        [breakpointmd] .progress-highlights { bottom: 50px; }
-        [mediaisfullscreen] .progress-highlights { bottom: 54px; height: 6px; }
+        [breakpointmd] .progress-highlights { bottom: 70px; }
+        [mediaisfullscreen] .progress-highlights { bottom: 74px; height: 6px; }
 
         media-time-range {
             position: absolute; bottom: 60px; left: 0; right: 0; width: 100%; height: 4px; z-index: 30;
@@ -309,7 +347,7 @@ const embedController = async (c) => {
         media-mute-button + media-volume-range { width: 0; overflow: hidden; transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1); margin-left: 0; }
         media-mute-button:hover + media-volume-range, media-mute-button:focus + media-volume-range,
         media-mute-button:focus-within + media-volume-range, media-volume-range:hover,
-        media-volume-range:focus, media-volume-range:focus-within { width: 80px; margin-left: 8px; }
+        media-volume-range:focus, media-volume-range:focus-within { width: 100px; margin-left: 8px; }
 
         media-time-display { 
             padding: 0 12px; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; 
@@ -331,12 +369,12 @@ const embedController = async (c) => {
         
         .mobile-centered-controls media-play-button { 
             display: flex;
-            width: 100px;
-            height: 100px;
+            width: 140px;
+            height: 140px;
             background: transparent !important;
             border-radius: 50%;
             transition: opacity 0.2s ease;
-            --media-button-icon-width: 44px;
+            --media-button-icon-width: 100px;
             border: none !important;
             opacity: 0.9;
         }
@@ -355,8 +393,8 @@ const embedController = async (c) => {
         @media (max-width: 768px) {
             .mobile-centered-controls media-play-button { 
                 width: 80px; 
-                height: 80px;
-                --media-button-icon-width: 36px;
+                height: 100px;
+                --media-button-icon-width: 80px;
             }
             
             .skip-container {
@@ -534,6 +572,9 @@ const embedController = async (c) => {
             ${icons.rollbackFlipped}
           </media-seek-forward-button>
 
+          <button id="settings-btn" class="yt-button" style="background: none; border: none; cursor: pointer;">
+            ${icons.gear}
+          </button>
 
           <media-pip-button class="yt-button">
             ${icons.pip}
@@ -996,20 +1037,42 @@ const embedController = async (c) => {
             const seekBackward = document.querySelector('media-seek-backward-button');
             const seekForward = document.querySelector('media-seek-forward-button');
             
-            [seekBackward, seekForward].forEach(btn => {
-                if (!btn) return;
+            const icon10Backward = '<svg viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;"><path d="M18 7C14.13 7 11 10.13 11 14h3l-4 4-4-4h3c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10v-2c4.42 0 8-3.58 8-8s-3.58-8-8-8z" fill="white"/><text x="18" y="22" font-size="10" fill="white" font-weight="bold" text-anchor="middle">10</text></svg>';
+            const icon10Forward = '<svg viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;"><path d="M18 7C21.87 7 25 10.13 25 14h-3l4 4 4-4h-3c0-5.52-4.48-10-10-10S8 8.48 8 14s4.48 10 10 10v-2c-4.42 0-8-3.58-8-8s3.58-8 8-8z" fill="white"/><text x="18" y="22" font-size="10" fill="white" font-weight="bold" text-anchor="middle">10</text></svg>';
+            
+            if (seekBackward) {
+                // Force seek offset to 10
+                seekBackward.setAttribute('seek-offset', '10');
+                seekBackward.seekOffset = 10;
+                seekBackward.innerHTML = icon10Backward;
+                seekBackward.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
                 try {
-                    const shadowRoot = btn.shadowRoot;
-                    if (shadowRoot) {
-                        const timeDisplay = shadowRoot.querySelector('[part*="time"]') || 
-                                          shadowRoot.querySelector('span') ||
-                                          shadowRoot.querySelector('[class*="time"]');
-                        if (timeDisplay && timeDisplay.textContent.includes('30')) {
-                            timeDisplay.textContent = timeDisplay.textContent.replace('30', '10');
-                        }
+                    if (seekBackward.shadowRoot) {
+                        const allElements = seekBackward.shadowRoot.querySelectorAll('*');
+                        allElements.forEach(el => {
+                            el.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
+                            if (el.textContent && el.textContent.includes('30')) el.textContent = el.textContent.replace('30', '10');
+                        });
                     }
                 } catch (e) {}
-            });
+            }
+            
+            if (seekForward) {
+                // Force seek offset to 10
+                seekForward.setAttribute('seek-offset', '10');
+                seekForward.seekOffset = 10;
+                seekForward.innerHTML = icon10Forward;
+                seekForward.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
+                try {
+                    if (seekForward.shadowRoot) {
+                        const allElements = seekForward.shadowRoot.querySelectorAll('*');
+                        allElements.forEach(el => {
+                            el.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
+                            if (el.textContent && el.textContent.includes('30')) el.textContent = el.textContent.replace('30', '10');
+                        });
+                    }
+                } catch (e) {}
+            }
         }
         
         setTimeout(updateSeekButtonLabels, 500);
