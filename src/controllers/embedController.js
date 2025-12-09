@@ -100,8 +100,8 @@ const embedController = async (c) => {
             --media-font-family: inherit;
             -webkit-font-smoothing: antialiased;
             --media-secondary-color: transparent;
-            --media-menu-background: rgba(20, 20, 20, 0.85);
-            --media-control-hover-background: var(--media-secondary-color);
+            --media-menu-background: rgba(20, 20, 20, 0.95);
+            --media-control-hover-background: rgba(255, 255, 255, 0.1);
             --media-range-track-height: 6px;
             --media-range-thumb-height: 14px;
             --media-range-thumb-width: 14px;
@@ -121,7 +121,7 @@ const embedController = async (c) => {
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 100;
             pointer-events: none;
         }
@@ -129,7 +129,6 @@ const embedController = async (c) => {
             display: flex;
         }
         
-        /* Hide controls when loading */
         .loading-overlay.visible ~ .mobile-centered-controls {
             display: none !important;
         }
@@ -154,27 +153,28 @@ const embedController = async (c) => {
         }
 
         .skip-button {
-            background: rgba(20, 20, 20, 0.95); 
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff; padding: 10px 24px; border-radius: 0px; cursor: pointer;
+            background: rgba(0, 0, 0, 0.8); 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 10px 24px; border-radius: 6px; cursor: pointer;
             font-weight: 600; font-size: 14px; display: none; align-items: center;
             gap: 10px; pointer-events: auto; margin-bottom: 12px;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         .skip-container {
-             position: absolute; bottom: 80px; right: 24px; display: flex;
+             position: absolute; bottom: 90px; right: 24px; display: flex;
              flex-direction: column; align-items: flex-end; z-index: 20; pointer-events: none;
         }
 
         .skip-button.visible { display: flex; }
         .skip-button:hover { 
-            background: rgba(40, 40, 40, 0.95); 
-            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.95); 
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         video { 
@@ -184,21 +184,20 @@ const embedController = async (c) => {
             transition: object-fit 0.3s ease;
         }
         
-        /* Adaptive Ratio classes */
         video.object-cover { object-fit: cover; }
         video.object-contain { object-fit: contain; }
 
-        /* Subtitle Styling - Modern & Positioned Lower */
+        /* Subtitle Styling */
         video::cue {
-            background-color: rgba(0, 0, 0, 0.65);
+            background-color: rgba(0, 0, 0, 0.8);
             color: #ffffff;
             font-size: 16px;
             font-family: 'Inter', system-ui, sans-serif;
             font-weight: 500;
             line-height: 1.4;
             padding: 4px 10px;
-            border-radius: 6px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
         
         [mediaisfullscreen] video::cue {
@@ -206,7 +205,6 @@ const embedController = async (c) => {
             padding: 6px 14px;
         }
 
-        /* Position subtitles lower on screen */
         video::-webkit-media-text-track-container {
             bottom: 60px !important;
             transform: translateY(20px); 
@@ -216,7 +214,6 @@ const embedController = async (c) => {
             bottom: 90px !important;
         }
         
-        /* Hide media-chrome's default subtitle display to prevent duplicates */
         media-controller::part(captions) {
             display: none !important;
         }
@@ -232,62 +229,64 @@ const embedController = async (c) => {
           height: 100%; opacity: 0.9; transition: all 0.2s ease;
           border-radius: 4px;
         }
-        .yt-button:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+        .yt-button:hover { 
+            opacity: 1; 
+            background: rgba(255,255,255,0.15);
+        }
         [breakpointmd] .yt-button { width: 44px; }
         
         .yt-button svg { height: 24px; width: 24px; fill: var(--media-primary-color, #fff); }
         
         .yt-gradient-bottom {
-            padding-top: 37px; position: absolute; width: 100%; height: 200px;
+            padding-top: 37px; position: absolute; width: 100%; height: 180px;
             bottom: 0; pointer-events: none; 
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
             z-index: 10;
         }
 
         media-settings-menu {
-            /* We replace this with our custom menu */
             display: none; 
         }
         
-        /* Progress bar highlights container */
+        /* Progress bar highlights container - MOVED UP 2PX */
         .progress-highlights {
             position: absolute;
-            bottom: 36px; /* Moved 2px higher (was 38px) */
+            bottom: 40px;
             left: 0;
             width: 100%;
             height: 4px;
             z-index: 21;
             pointer-events: none;
         }
-        [breakpointmd] .progress-highlights { bottom: 46px; } /* Moved 2px higher (was 48px) */
-        [mediaisfullscreen] .progress-highlights { bottom: 50px; height: 6px; } /* Moved 2px higher (was 52px) */
+        [breakpointmd] .progress-highlights { bottom: 50px; }
+        [mediaisfullscreen] .progress-highlights { bottom: 54px; height: 6px; }
 
+        /* PROGRESS BAR - MOVED UP 2PX */
         media-time-range {
-            position: absolute; bottom: 36px; width: 100%; height: 4px; z-index: 20; /* Moved 2px higher (was 38px) */
+            position: absolute; bottom: 40px; width: 100%; height: 4px; z-index: 20;
             overflow: visible !important;
-            --media-range-track-background: rgba(255, 255, 255, 0.15);
-            --media-range-track-pointer-background: rgba(255, 255, 255, 0.3);
-            --media-time-range-buffered-color: rgba(255, 255, 255, 0.25);
-            --media-range-bar-color: var(--media-accent-color, #e50914);
+            --media-range-track-background: rgba(255, 255, 255, 0.2);
+            --media-range-track-pointer-background: rgba(255, 255, 255, 0.35);
+            --media-time-range-buffered-color: rgba(255, 255, 255, 0.3);
+            --media-range-bar-color: #e50914;
             --media-range-thumb-border-radius: 13px;
-            --media-range-thumb-background: var(--media-accent-color, #e50914);
+            --media-range-thumb-background: #e50914;
             --media-range-thumb-transform: scale(0);
             transition: height 0.1s ease;
         }
         media-time-range:hover {
             height: 8px; --media-range-thumb-transform: scale(1);
         }
-        [breakpointmd] media-time-range { bottom: 46px; } /* Moved 2px higher (was 48px) */
-        [mediaisfullscreen] media-time-range { bottom: 50px; height: 8px; } /* Moved 2px higher (was 52px) */
+        [breakpointmd] media-time-range { bottom: 50px; }
+        [mediaisfullscreen] media-time-range { bottom: 54px; height: 8px; }
         [mediaisfullscreen] media-time-range:hover { height: 10px; }
 
-        /* Intro/Outro highlights on progress bar - Enhanced chapter-style */
         .progress-highlights .intro-highlight, 
         .progress-highlights .outro-highlight {
             position: absolute !important;
             height: 100% !important;
             top: 0 !important;
-            background-color: rgba(253, 210, 83, 0.9) !important;
+            background-color: rgba(255, 193, 7, 0.85) !important;
             pointer-events: none !important;
             z-index: 22;
         }
@@ -298,7 +297,7 @@ const embedController = async (c) => {
         }
         [breakpointmd] media-control-bar { height: 56px; }
         
-        media-play-button { display: none; } /* Removed from control bar */
+        media-play-button { display: none; }
 
         media-mute-button {
             padding: 0 8px;
@@ -335,6 +334,7 @@ const embedController = async (c) => {
         media-settings-menu-button svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         media-settings-menu-button[aria-expanded='true'] svg { transform: rotate(90deg); }
 
+        /* IMPROVED MOBILE CENTERED CONTROLS */
         .mobile-centered-controls {
             display: flex; align-self: stretch; align-items: center; flex-flow: row nowrap;
             justify-content: center; margin: 0 auto; width: 100%; height: 100%; 
@@ -344,35 +344,53 @@ const embedController = async (c) => {
         
         .mobile-centered-controls media-play-button { 
             display: flex;
-            width: 72px; height: 72px;
-            background: rgba(0,0,0,0.6);
+            width: 64px; height: 64px;
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 50%;
             transition: all 0.2s ease;
-            --media-button-icon-width: 32px;
-            border: 2px solid rgba(255,255,255,0.1);
+            --media-button-icon-width: 28px;
+            border: 2px solid rgba(255,255,255,0.2);
         }
         .mobile-centered-controls media-play-button:hover {
-            background: rgba(229, 9, 20, 1);
-            transform: scale(1.1);
-            border-color: transparent;
+            background: rgba(0, 0, 0, 0.85);
+            transform: scale(1.08);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .mobile-centered-controls media-play-button { 
+                width: 56px; 
+                height: 56px;
+                --media-button-icon-width: 24px;
+            }
+            
+            .skip-container {
+                bottom: 75px;
+                right: 16px;
+            }
+            
+            .skip-button {
+                padding: 8px 18px;
+                font-size: 12px;
+            }
         }
 
-        /* NEXT.JS STYLE SETTINGS MENU - Removed backdrop-filter */
+        /* IMPROVED SETTINGS MENU - NO GLASSMORPHISM */
         .custom-menu {
             display: none; position: absolute; right: 20px; bottom: 70px;
-            background: rgba(15, 15, 15, 0.95); /* Solid background, removed blur */
-            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 8px;
             width: 280px; 
             max-height: 400px; 
             overflow: hidden;
             z-index: 100; 
             box-shadow: 
-                0 0 0 1px rgba(255, 255, 255, 0.08),
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                0 8px 16px rgba(0, 0, 0, 0.2);
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 8px 24px rgba(0, 0, 0, 0.6);
             font-family: 'Inter', sans-serif;
             transform-origin: bottom right;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
             transform: scale(0.95) translateY(10px);
             pointer-events: none;
@@ -389,27 +407,25 @@ const embedController = async (c) => {
             max-height: 400px;
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.2) transparent;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
         .menu-scroll-container::-webkit-scrollbar { width: 4px; }
-        .menu-scroll-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .menu-scroll-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
 
-        /* Menu Header */
         .menu-header {
             padding: 14px 16px; 
             font-weight: 600; 
             font-size: 14px;
             color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex; align-items: center; gap: 12px; 
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
             position: sticky; top: 0; z-index: 10;
         }
         .menu-header.clickable { cursor: pointer; }
-        .menu-header.clickable:hover { background: rgba(255, 255, 255, 0.06); }
+        .menu-header.clickable:hover { background: rgba(255, 255, 255, 0.08); }
         .back-icon { font-size: 14px; opacity: 0.7; }
         
-        /* Menu Item Rows */
         .menu-item {
             padding: 12px 16px; 
             cursor: pointer; 
@@ -418,26 +434,24 @@ const embedController = async (c) => {
             justify-content: space-between;
             color: #e5e5e5;
             transition: all 0.2s ease;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
         }
         .menu-item:last-child { border-bottom: none; }
         
         .menu-item:hover { 
-            background: rgba(255, 255, 255, 0.08); 
+            background: rgba(255, 255, 255, 0.1); 
             color: #fff; 
-            padding-left: 20px; /* Slight slide effect */
+            padding-left: 20px;
         }
         
-        /* Left side content (Icon + Label) */
         .item-left { display: flex; align-items: center; gap: 12px; }
         .item-icon { 
             display: flex; align-items: center; justify-content: center;
             width: 20px; height: 20px; opacity: 0.8;
-            font-size: 18px; /* For React Icons */
+            font-size: 18px;
         }
         
-        /* Right side content (Value + Chevron) */
         .item-right { display: flex; align-items: center; gap: 8px; }
         .item-value { 
             font-size: 13px; color: rgba(255, 255, 255, 0.5); 
@@ -447,31 +461,39 @@ const embedController = async (c) => {
         }
         .item-chevron { font-size: 12px; opacity: 0.4; }
 
-        /* Selection styling for submenu items */
         .sub-menu-item {
-            padding: 12px 16px 12px 48px; /* Indent for checkmark space */
+            padding: 12px 16px 12px 48px;
             position: relative;
         }
         .sub-menu-item .checkmark {
             position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            color: #e50914; /* Brand color */
+            color: #e50914;
             opacity: 0; 
             font-size: 16px;
             transition: all 0.2s ease;
         }
         .sub-menu-item.active { 
-            background: rgba(229, 9, 20, 0.1); 
+            background: rgba(229, 9, 20, 0.15); 
             color: #fff; font-weight: 500;
         }
         .sub-menu-item.active .checkmark { opacity: 1; }
-        .sub-menu-item:hover { background: rgba(255,255,255,0.08); }
+        .sub-menu-item:hover { background: rgba(255,255,255,0.1); }
+        
+        /* Mobile menu adjustments */
+        @media (max-width: 768px) {
+            .custom-menu {
+                right: 10px;
+                bottom: 60px;
+                width: calc(100vw - 20px);
+                max-width: 320px;
+            }
+        }
     </style>
 </head>
 <body>
       <media-controller breakpoints="md:480" gesturesdisabled defaultstreamtype="on-demand">
         <video slot="media" id="video-player" crossorigin="anonymous" playsinline autoplay></video>
         
-        <!-- Loading Overlay -->
         <div id="loading-overlay" class="loading-overlay visible">
           <svg width="80" height="80" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path class="spinner_l9ve" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
@@ -491,10 +513,8 @@ const embedController = async (c) => {
             </div>
         </div>
 
-        <!-- Custom Settings Menu -->
         <div id="custom-settings-menu" class="custom-menu"></div>
 
-        <!-- Progress bar highlights container -->
         <div id="progress-highlights" class="progress-highlights"></div>
 
         <media-time-range id="time-range">
@@ -503,13 +523,9 @@ const embedController = async (c) => {
         </media-time-range>
 
         <media-control-bar>
-
-
           <media-mute-button class="yt-button">
             <svg slot="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <!-- Speaker body -->
                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="#fff"/>
-                <!-- Sound waves (will be hidden when muted) -->
                 <path id="volume-wave" d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="#fff"/>
             </svg>
           </media-mute-button>
@@ -518,15 +534,15 @@ const embedController = async (c) => {
           <media-time-display showduration></media-time-display>
           <span class="control-spacer"></span>
 
-          <!-- Seek Buttons with React Icons -->
           <media-seek-backward-button seek-offset="10" class="yt-button">
-            ${renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px' } })}
+            ${icons.rollback}
           </media-seek-backward-button>
           
           <media-seek-forward-button seek-offset="10" class="yt-button">
-            ${renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } })}
+            ${icons.rollbackFlipped}
           </media-seek-forward-button>
 
+          <media-captions-button class="yt-button">
              <svg slot="icon" class="caption-off-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                <path d="M3.708 7.755c0-1.111.488-1.753 1.319-1.753.681 0 1.138.47 1.186 1.107H7.36V7c-.052-1.186-1.024-2-2.342-2C3.414 5 2.5 6.05 2.5 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114H6.213c-.048.615-.496 1.05-1.186 1.05-.84 0-1.319-.62-1.319-1.727zm6.14 0c0-1.111.488-1.753 1.318-1.753.682 0 1.139.47 1.187 1.107H13.5V7c-.053-1.186-1.024-2-2.342-2C9.554 5 8.64 6.05 8.64 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114h-1.147c-.048.615-.497 1.05-1.187 1.05-.839 0-1.318-.62-1.318-1.727z" fill="#fff"/>
                <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" fill="#fff"/>
@@ -540,7 +556,7 @@ const embedController = async (c) => {
           </button>
 
           <media-pip-button class="yt-button">
-            ${renderIcon(BsPip, { style: { width: '24px', height: '24px' } })}
+            ${icons.pip}
           </media-pip-button>
 
           <media-fullscreen-button class="yt-button">
@@ -555,16 +571,15 @@ const embedController = async (c) => {
 
         <div class="mobile-centered-controls" slot="centered-chrome">
           <media-play-button>
-            <svg slot="play" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg slot="play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               ${icons.play}
             </svg>
-            <svg slot="pause" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg slot="pause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               ${icons.pause}
             </svg>
           </media-play-button>
         </div>
       </media-controller>
-
 
     <script>
         const SVGs = ${JSON.stringify(icons)};
@@ -572,7 +587,6 @@ const embedController = async (c) => {
         const outro = ${JSON.stringify(outro || { start: 0, end: 0 })};
         const episodeType = '${episodeType}';
         const subtitles = ${JSON.stringify(tracks || [])};
-        
         
         const video = document.getElementById('video-player');
         const settingsBtn = document.getElementById('settings-btn');
@@ -587,15 +601,11 @@ const embedController = async (c) => {
         let currentSubtitle = null;
         let subtitlesLoaded = false;
 
-        // Loading state management
         function showLoading() {
             if (loadingOverlay) {
                 loadingOverlay.classList.add('visible');
-                
-                // Hide play/pause and seek buttons during loading
                 const playButtons = document.querySelectorAll('media-play-button');
                 const seekButtons = document.querySelectorAll('media-seek-backward-button, media-seek-forward-button');
-                
                 playButtons.forEach(btn => btn.style.visibility = 'hidden');
                 seekButtons.forEach(btn => btn.style.visibility = 'hidden');
             }
@@ -604,17 +614,13 @@ const embedController = async (c) => {
         function hideLoading() {
             if (loadingOverlay) {
                 loadingOverlay.classList.remove('visible');
-                
-                // Show play/pause and seek buttons when loading completes
                 const playButtons = document.querySelectorAll('media-play-button');
                 const seekButtons = document.querySelectorAll('media-seek-backward-button, media-seek-forward-button');
-                
                 playButtons.forEach(btn => btn.style.visibility = 'visible');
                 seekButtons.forEach(btn => btn.style.visibility = 'visible');
             }
         }
 
-        // Initialize HLS with optimized config
         if (Hls.isSupported()) {
             hls = new Hls({
                 maxBufferLength: 30,
@@ -628,7 +634,6 @@ const embedController = async (c) => {
                 levelLoadingTimeOut: 30000,
                 startLevel: -1,
                 abrEwmaDefaultEstimate: 500000,
-                // Disable HLS.js native subtitle rendering to prevent duplicates
                 renderTextTracksNatively: false,
                 enableWorker: true
             });
@@ -654,12 +659,10 @@ const embedController = async (c) => {
                 }
             });
 
-            // Load subtitles after manifest is parsed
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 loadSubtitles();
             });
 
-            // Handle loading states
             hls.on(Hls.Events.FRAG_LOADING, () => {
                 if (video.paused && video.readyState < 3) {
                     showLoading();
@@ -676,30 +679,25 @@ const embedController = async (c) => {
             video.addEventListener('loadedmetadata', loadSubtitles);
         }
 
-        // Video event listeners for loading states
         video.addEventListener('waiting', showLoading);
         video.addEventListener('seeking', showLoading);
         video.addEventListener('loadstart', showLoading);
-        
         video.addEventListener('canplay', hideLoading);
         video.addEventListener('playing', hideLoading);
         video.addEventListener('seeked', hideLoading);
 
-        // Monitor text tracks to prevent duplicates
         function enforceSubtitleState() {
             if (video.textTracks && video.textTracks.length > 0) {
                 let showingCount = 0;
                 Array.from(video.textTracks).forEach((track, i) => {
                     if (track.mode === 'showing') {
                         showingCount++;
-                        // If this isn't the current subtitle, disable it
                         if (i !== currentSubtitle) {
                             track.mode = 'disabled';
                         }
                     }
                 });
                 
-                // If multiple tracks are showing, disable all except current
                 if (showingCount > 1) {
                     Array.from(video.textTracks).forEach((track, i) => {
                         track.mode = i === currentSubtitle ? 'showing' : 'disabled';
@@ -708,55 +706,41 @@ const embedController = async (c) => {
             }
         }
         
-        // Check for duplicate subtitles periodically
         setInterval(enforceSubtitleState, 500);
 
-        // Load subtitles function
         function loadSubtitles() {
-            // Prevent loading subtitles multiple times
             if (subtitlesLoaded) {
                 return;
             }
             
-            // For dub episodes or when no subtitles available, don't load anything
             if (subtitles.length === 0) {
                 subtitlesLoaded = true;
                 updateCaptionButtonState(false);
                 return;
             }
             
-            // Remove any existing subtitle tracks to prevent duplicates
             const existingTracks = video.querySelectorAll('track');
             existingTracks.forEach(track => track.remove());
             
-            // Also disable all existing text tracks from HLS
             if (video.textTracks && video.textTracks.length > 0) {
                 Array.from(video.textTracks).forEach(track => {
                     track.mode = 'disabled';
                 });
             }
             
-            // Load external subtitle tracks
             subtitles.forEach((track, index) => {
                 const trackEl = document.createElement('track');
                 trackEl.kind = 'subtitles';
                 trackEl.label = track.label;
                 trackEl.srclang = 'en';
-                trackEl.src = track.file; // Use direct subtitle URL
-                
-                // Do NOT set any track as default - user must manually enable
-                
+                trackEl.src = track.file;
                 video.appendChild(trackEl);
             });
             
-            // Wait for tracks to be loaded, then set their mode
             setTimeout(() => {
-                // Disable ALL text tracks by default
                 Array.from(video.textTracks).forEach((track, i) => {
                     track.mode = 'disabled';
                 });
-                
-                // Do not enable any subtitle by default
                 currentSubtitle = null;
                 updateCaptionButtonState(false);
             }, 100);
@@ -764,17 +748,13 @@ const embedController = async (c) => {
             subtitlesLoaded = true;
         }
 
-        // Add intro/outro highlights to progress bar
         function addProgressBarHighlights() {
             const highlightsContainer = document.getElementById('progress-highlights');
             if (!highlightsContainer || !video.duration) return;
 
-            // Remove existing highlights
             highlightsContainer.innerHTML = '';
-
             const duration = video.duration;
 
-            // Add intro highlight
             if (intro.end > 0) {
                 const start = Math.max(0, intro.start);
                 const end = Math.min(intro.end, duration);
@@ -790,7 +770,6 @@ const embedController = async (c) => {
                 }
             }
 
-            // Add outro highlight
             if (outro.end > 0) {
                 const start = Math.max(0, outro.start);
                 const end = Math.min(outro.end, duration);
@@ -807,30 +786,20 @@ const embedController = async (c) => {
             }
         }
 
-        // Add highlights when video metadata is loaded
         video.addEventListener('loadedmetadata', addProgressBarHighlights);
         video.addEventListener('durationchange', addProgressBarHighlights);
 
-        // Settings menu logic
         let menuState = 'main';
-        let currentAspectRatio = 'contain'; // 'contain' or 'cover'
+        let currentAspectRatio = 'contain';
         
-        // Helper to get formatted aspect ratio label
         function getAspectRatioLabel() {
             return currentAspectRatio === 'contain' ? 'Original' : 'Zoom to Fill';
         }
 
-        // Helper to toggle aspect ratio
         function setAspectRatio(ratio) {
             currentAspectRatio = ratio;
-            
-            // Remove all ratio classes first
             video.classList.remove('object-contain', 'object-cover');
-            
-            // Add new class
             video.classList.add('object-' + ratio);
-            
-            // Update menu if open
             if (menuState === 'main') showMainMenu();
             if (menuState === 'ratio') showAspectRatioMenu();
         }
@@ -875,17 +844,14 @@ const embedController = async (c) => {
             let html = '<div class="menu-scroll-container">';
             html += renderMenuHeader('Settings');
             html += '<div class="menu-content">';
-            
             html += renderMenuItem(SVGs.gear, 'Quality', qualityLabel, 'quality');
             html += renderMenuItem(SVGs.speed, 'Playback Speed', speedLabel, 'speed');
             html += renderMenuItem(SVGs.ratio, 'Adaptive Ratio', ratioLabel, 'ratio');
             html += renderMenuItem(SVGs.cc, 'Subtitles', subLabel, 'subtitle');
-            
             html += '</div></div>';
             
             settingsMenu.innerHTML = html;
             
-            // Add event listeners
             settingsMenu.querySelectorAll('.menu-item').forEach(item => {
                 const action = item.getAttribute('data-action');
                 item.addEventListener('click', (e) => {
@@ -905,10 +871,8 @@ const embedController = async (c) => {
             let html = '<div class="menu-scroll-container">';
             html += renderMenuHeader('Quality', 'back');
             html += '<div class="menu-content">';
-            
             html += renderSubMenuItem('Auto', currentQuality === -1, '-1');
             
-            // Sort levels by height (resolution) descending
             const levels = hls.levels.map((l, i) => ({ ...l, originalIndex: i })).sort((a, b) => b.height - a.height);
             
             levels.forEach((level) => {
@@ -916,19 +880,15 @@ const embedController = async (c) => {
             });
             
             html += '</div></div>';
-            
             settingsMenu.innerHTML = html;
-            
-            // Back button
             settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
-            // Quality options
             settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const level = parseInt(item.getAttribute('data-value'));
                     setQuality(level);
-                    showMainMenu(); // Auto-back on selection
+                    showMainMenu();
                 });
             });
         }
@@ -946,9 +906,7 @@ const embedController = async (c) => {
             });
             
             html += '</div></div>';
-            
             settingsMenu.innerHTML = html;
-            
             settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
             settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
@@ -967,14 +925,11 @@ const embedController = async (c) => {
             let html = '<div class="menu-scroll-container">';
             html += renderMenuHeader('Adaptive Ratio', 'back');
             html += '<div class="menu-content">';
-            
             html += renderSubMenuItem('Original (Contain)', currentAspectRatio === 'contain', 'contain');
             html += renderSubMenuItem('Zoom to Fill (Cover)', currentAspectRatio === 'cover', 'cover');
-            
             html += '</div></div>';
             
             settingsMenu.innerHTML = html;
-            
             settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
             settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
@@ -993,7 +948,6 @@ const embedController = async (c) => {
             let html = '<div class="menu-scroll-container">';
             html += renderMenuHeader('Subtitles', 'back');
             html += '<div class="menu-content">';
-            
             html += renderSubMenuItem('Off', currentSubtitle === null, 'off');
             
             subtitles.forEach((track, index) => {
@@ -1001,9 +955,7 @@ const embedController = async (c) => {
             });
             
             html += '</div></div>';
-            
             settingsMenu.innerHTML = html;
-            
             settingsMenu.querySelector('.menu-header').addEventListener('click', () => showMainMenu());
             
             settingsMenu.querySelectorAll('.sub-menu-item').forEach(item => {
@@ -1011,8 +963,7 @@ const embedController = async (c) => {
                     e.stopPropagation();
                     let value = item.getAttribute('data-value');
                     if (value !== 'off') value = parseInt(value);
-                    else value = null; // null represents 'Off'
-                    
+                    else value = null;
                     setSubtitle(value);
                     showMainMenu();
                 });
@@ -1035,19 +986,13 @@ const embedController = async (c) => {
 
         function setSubtitle(index) {
             currentSubtitle = index;
-            
-            // Update text tracks - use 'disabled' instead of 'hidden' to fully turn off
             Array.from(video.textTracks).forEach((track, i) => {
                 track.mode = i === index ? 'showing' : 'disabled';
             });
-            
-            // Update CC button state and icon
             updateCaptionButtonState(index !== null);
-            
             showMainMenu();
         }
 
-        // Update caption button visual state
         function updateCaptionButtonState(isActive) {
             const ccButton = document.querySelector('media-captions-button');
             if (ccButton) {
@@ -1071,15 +1016,12 @@ const embedController = async (c) => {
             }
         });
 
-        // Update seek button labels to show 10s - improved method
         function updateSeekButtonLabels() {
             const seekBackward = document.querySelector('media-seek-backward-button');
             const seekForward = document.querySelector('media-seek-forward-button');
             
             [seekBackward, seekForward].forEach(btn => {
                 if (!btn) return;
-                
-                // Try to update via shadow DOM
                 try {
                     const shadowRoot = btn.shadowRoot;
                     if (shadowRoot) {
@@ -1090,17 +1032,14 @@ const embedController = async (c) => {
                             timeDisplay.textContent = timeDisplay.textContent.replace('30', '10');
                         }
                     }
-                } catch (e) {
-                }
+                } catch (e) {}
             });
         }
         
-        // Try multiple times to update seek buttons
         setTimeout(updateSeekButtonLabels, 500);
         setTimeout(updateSeekButtonLabels, 1000);
         setTimeout(updateSeekButtonLabels, 2000);
 
-        // Skip intro/outro logic
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
             
@@ -1131,4 +1070,4 @@ const embedController = async (c) => {
     }
 };
 
-export default embedController;
+export default embedController;.75 19.5188 20
