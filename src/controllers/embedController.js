@@ -9,6 +9,7 @@ import { extractStream } from '../extractor/extractStream.js';
 const embedController = async (c) => {
     try {
         let { id, server, type } = c.req.param();
+
         const renderIcon = (IconComponent, props = {}) => {
             return ReactDOMServer.renderToStaticMarkup(React.createElement(IconComponent, props));
         };
@@ -100,8 +101,8 @@ const embedController = async (c) => {
             --media-font-family: inherit;
             -webkit-font-smoothing: antialiased;
             --media-secondary-color: transparent;
-            --media-menu-background: rgba(20, 20, 20, 0.95);
-            --media-control-hover-background: rgba(255, 255, 255, 0.1);
+            --media-menu-background: rgba(20, 20, 20, 0.85);
+            --media-control-hover-background: var(--media-secondary-color);
             --media-range-track-height: 6px;
             --media-range-thumb-height: 14px;
             --media-range-thumb-width: 14px;
@@ -111,7 +112,6 @@ const embedController = async (c) => {
             --media-tooltip-display: none;
         }
 
-        /* Loading Spinner */
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -187,7 +187,6 @@ const embedController = async (c) => {
         video.object-cover { object-fit: cover; }
         video.object-contain { object-fit: contain; }
 
-        /* Subtitle Styling */
         video::cue {
             background-color: rgba(0, 0, 0, 0.8);
             color: #ffffff;
@@ -248,7 +247,6 @@ const embedController = async (c) => {
             display: none; 
         }
         
-        /* Progress bar highlights container - MOVED UP 2PX */
         .progress-highlights {
             position: absolute;
             bottom: 40px;
@@ -261,7 +259,6 @@ const embedController = async (c) => {
         [breakpointmd] .progress-highlights { bottom: 50px; }
         [mediaisfullscreen] .progress-highlights { bottom: 54px; height: 6px; }
 
-        /* PROGRESS BAR - MOVED UP 2PX */
         media-time-range {
             position: absolute; bottom: 40px; width: 100%; height: 4px; z-index: 20;
             overflow: visible !important;
@@ -334,7 +331,6 @@ const embedController = async (c) => {
         media-settings-menu-button svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         media-settings-menu-button[aria-expanded='true'] svg { transform: rotate(90deg); }
 
-        /* IMPROVED MOBILE CENTERED CONTROLS */
         .mobile-centered-controls {
             display: flex; align-self: stretch; align-items: center; flex-flow: row nowrap;
             justify-content: center; margin: 0 auto; width: 100%; height: 100%; 
@@ -357,7 +353,6 @@ const embedController = async (c) => {
             border-color: rgba(255,255,255,0.4);
         }
         
-        /* Mobile responsiveness */
         @media (max-width: 768px) {
             .mobile-centered-controls media-play-button { 
                 width: 56px; 
@@ -376,7 +371,6 @@ const embedController = async (c) => {
             }
         }
 
-        /* IMPROVED SETTINGS MENU - NO GLASSMORPHISM */
         .custom-menu {
             display: none; position: absolute; right: 20px; bottom: 70px;
             background: rgba(0, 0, 0, 0.95);
@@ -479,7 +473,6 @@ const embedController = async (c) => {
         .sub-menu-item.active .checkmark { opacity: 1; }
         .sub-menu-item:hover { background: rgba(255,255,255,0.1); }
         
-        /* Mobile menu adjustments */
         @media (max-width: 768px) {
             .custom-menu {
                 right: 10px;
@@ -1070,4 +1063,4 @@ const embedController = async (c) => {
     }
 };
 
-export default embedController;.75 19.5188 20
+export default embedController;
