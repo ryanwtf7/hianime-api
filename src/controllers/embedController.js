@@ -265,7 +265,7 @@ const embedController = async (c) => {
         [mediaisfullscreen] .progress-highlights { bottom: 54px; height: 6px; }
 
         media-time-range {
-            position: absolute; bottom: 40px; width: 100%; height: 4px; z-index: 30;
+            position: absolute; bottom: 60px; left: 0; right: 0; width: 100%; height: 4px; z-index: 30;
             overflow: visible !important;
             --media-range-track-background: rgba(255, 255, 255, 0.2);
             --media-range-track-pointer-background: rgba(255, 255, 255, 0.35);
@@ -279,8 +279,8 @@ const embedController = async (c) => {
         media-time-range:hover {
             height: 8px; --media-range-thumb-transform: scale(1);
         }
-        [breakpointmd] media-time-range { bottom: 50px; }
-        [mediaisfullscreen] media-time-range { bottom: 54px; height: 8px; }
+        [breakpointmd] media-time-range { bottom: 70px; }
+        [mediaisfullscreen] media-time-range { bottom: 74px; height: 8px; }
         [mediaisfullscreen] media-time-range:hover { height: 10px; }
 
         .progress-highlights .intro-highlight, 
@@ -295,7 +295,7 @@ const embedController = async (c) => {
         
         media-control-bar {
             position: absolute; height: 48px; display: flex; align-items: center;
-            bottom: 0; left: 16px; right: 16px; z-index: 30;
+            bottom: 0; left: 0; right: 0; z-index: 30; padding: 0 16px;
         }
         [breakpointmd] media-control-bar { height: 56px; }
         
@@ -317,21 +317,7 @@ const embedController = async (c) => {
         }
         .control-spacer { flex-grow: 1; }
 
-        media-captions-button { 
-            --media-button-icon-width: 22px;
-        }
         
-        media-captions-button[aria-checked='true']::after {
-            content: '';
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: #e50914;
-            border-radius: 50%;
-        }
 
         media-settings-menu-button svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         media-settings-menu-button[aria-expanded='true'] svg { transform: rotate(90deg); }
@@ -548,18 +534,6 @@ const embedController = async (c) => {
             ${icons.rollbackFlipped}
           </media-seek-forward-button>
 
-          <media-captions-button class="yt-button">
-             <svg slot="icon" class="caption-off-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-               <path d="M3.708 7.755c0-1.111.488-1.753 1.319-1.753.681 0 1.138.47 1.186 1.107H7.36V7c-.052-1.186-1.024-2-2.342-2C3.414 5 2.5 6.05 2.5 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114H6.213c-.048.615-.496 1.05-1.186 1.05-.84 0-1.319-.62-1.319-1.727zm6.14 0c0-1.111.488-1.753 1.318-1.753.682 0 1.139.47 1.187 1.107H13.5V7c-.053-1.186-1.024-2-2.342-2C9.554 5 8.64 6.05 8.64 7.751v.747c0 1.7.905 2.73 2.518 2.73 1.314 0 2.285-.792 2.342-1.939v-.114h-1.147c-.048.615-.497 1.05-1.187 1.05-.839 0-1.318-.62-1.318-1.727z" fill="#fff"/>
-               <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" fill="#fff"/>
-             </svg>
-          </media-captions-button>
-
-          <button id="settings-btn" class="yt-button" style="background: none; border: none; cursor: pointer;">
-            <svg viewBox="0 0 36 36">
-              <path d="M11.8153 12.0477L14.2235 12.9602C14.6231 12.6567 15.0599 12.3996 15.5258 12.1971L15.9379 9.66561C16.5985 9.50273 17.2891 9.41632 18 9.41632C18.7109 9.41632 19.4016 9.50275 20.0622 9.66566L20.4676 12.1555C20.9584 12.3591 21.418 12.6227 21.8372 12.9372L24.1846 12.0477C25.1391 13.0392 25.8574 14.2597 26.249 15.6186L24.3196 17.1948C24.3531 17.4585 24.3704 17.7272 24.3704 18C24.3704 18.2727 24.3531 18.5415 24.3196 18.8051L26.249 20.3814C25.8574 21.7403 25.1391 22.9607 24.1846 23.9522L21.8372 23.0628C21.4179 23.3772 20.9584 23.6408 20.4676 23.8445L20.0622 26.3343C19.4016 26.4972 18.7109 26.5836 18 26.5836C17.2891 26.5836 16.5985 26.4972 15.9379 26.3344L15.5258 23.8029C15.0599 23.6003 14.6231 23.3433 14.2236 23.0398L11.8154 23.9523C10.8609 22.9608 10.1426 21.7404 9.75098 20.3815L11.7633 18.7375C11.7352 18.4955 11.7208 18.2495 11.7208 18C11.7208 17.7505 11.7352 17.5044 11.7633 17.2625L9.75098 15.6185C10.1426 14.2596 10.8609 13.0392 11.8153 12.0477ZM18 20.75C19.5188 20.75 20.75 19.5188 20.75 18C20.75 16.4812 19.5188 15.25 18 15.25C16.4812 15.25 15.25 16.4812 15.25 18C15.25 19.5188 16.4812 20.75 18 20.75Z" fill="#fff"/>
-            </svg>
-          </button>
 
           <media-pip-button class="yt-button">
             ${icons.pip}
@@ -1000,10 +974,6 @@ const embedController = async (c) => {
         }
 
         function updateCaptionButtonState(isActive) {
-            const ccButton = document.querySelector('media-captions-button');
-            if (ccButton) {
-                ccButton.setAttribute('aria-checked', isActive ? 'true' : 'false');
-            }
         }
 
         settingsBtn.addEventListener('click', (e) => {
