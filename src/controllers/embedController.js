@@ -1,8 +1,3 @@
-import React from 'react';
-import ReactDOMServer from 'react-dom/server';
-import { BsGearFill, BsCheckLg, BsChevronLeft, BsAspectRatio, BsSpeedometer2, BsCollectionPlay, BsBadgeCc, BsPip } from 'react-icons/bs';
-import { AiOutlineRollback } from "react-icons/ai";
-import { FaPlay, FaPause } from "react-icons/fa6";
 import { getServers } from './serversController.js';
 import { extractStream } from '../extractor/extractStream.js';
 
@@ -10,23 +5,25 @@ const embedController = async (c) => {
     try {
         let { id, server, type } = c.req.param();
 
-        const renderIcon = (IconComponent, props = {}) => {
-            return ReactDOMServer.renderToStaticMarkup(React.createElement(IconComponent, props));
-        };
-
+        // SVG icons from src/assets/
         const icons = {
-            back: renderIcon(AiOutlineRollback),
-            check: renderIcon(BsCheckLg),
-            chevron: renderIcon(BsChevronLeft, { style: { transform: 'rotate(180deg)' } }),
-            gear: renderIcon(BsGearFill),
-            speed: renderIcon(BsSpeedometer2),
-            ratio: renderIcon(BsAspectRatio),
-            cc: renderIcon(BsBadgeCc),
-            pip: renderIcon(BsPip),
-            rollback: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px' } }),
-            rollbackFlipped: renderIcon(AiOutlineRollback, { style: { width: '24px', height: '24px', transform: 'scaleX(-1)' } }),
-            play: renderIcon(FaPlay),
-            pause: renderIcon(FaPause)
+            back: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>',
+            check: '<svg viewBox="0 0 16 16" fill="#fff"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>',
+            chevron: '<svg viewBox="0 0 16 16" fill="#fff" style="transform: rotate(180deg)"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>',
+            gear: '<svg fill="#fff" class="jw-svg-icon jw-svg-icon-settings" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false"><path d="M204,145l-25-14c0.8-3.6,1.2-7.3,1-11c0.2-3.7-0.2-7.4-1-11l25-14c2.2-1.6,3.1-4.5,2-7l-16-26c-1.2-2.1-3.8-2.9-6-2l-25,14c-6-4.2-12.3-7.9-19-11V35c0.2-2.6-1.8-4.8-4.4-5c-0.2,0-0.4,0-0.6,0h-30c-2.6-0.2-4.8,1.8-5,4.4c0,0.2,0,0.4,0,0.6v28c-6.7,3.1-13,6.7-19,11L56,60c-2.2-0.9-4.8-0.1-6,2L35,88c-1.6,2.2-1.3,5.3,0.9,6.9c0,0,0.1,0,0.1,0.1l25,14c-0.8,3.6-1.2,7.3-1,11c-0.2,3.7,0.2,7.4,1,11l-25,14c-2.2,1.6-3.1,4.5-2,7l16,26c1.2,2.1,3.8,2.9,6,2l25-14c5.7,4.6,12.2,8.3,19,11v28c-0.2,2.6,1.8,4.8,4.4,5c0.2,0,0.4,0,0.6,0h30c2.6,0.2,4.8-1.8,5-4.4c0-0.2,0-0.4,0-0.6v-28c7-2.3,13.5-6,19-11l25,14c2.5,1.3,5.6,0.4,7-2l15-26C206.7,149.4,206,146.7,204,145z M120,149.9c-16.5,0-30-13.4-30-30s13.4-30,30-30s30,13.4,30,30c0.3,16.3-12.6,29.7-28.9,30C120.7,149.9,120.4,149.9,120,149.9z"/></svg>',
+            speed: '<svg viewBox="0 0 16 16" fill="#fff"><path d="M8 2a.5.5 0 0 1 .5.5V4a.5.5 0 0 1-1 0V2.5A.5.5 0 0 1 8 2zM3.732 3.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707zM2 8a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 8zm9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5zm.754-4.246a.389.389 0 0 0-.527-.02L7.547 7.31A.91.91 0 1 0 8.85 8.569l3.434-4.297a.389.389 0 0 0-.029-.518z"/><path fill-rule="evenodd" d="M6.664 15.889A8 8 0 1 1 9.336.11a8 8 0 0 1-2.672 15.78zm-4.665-4.283A11.945 11.945 0 0 1 8 10c2.186 0 4.236.585 6.001 1.606a7 7 0 1 0-12.002 0z"/></svg>',
+            ratio: '<svg viewBox="0 0 16 16" fill="#fff"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/><path d="M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H3v2.5a.5.5 0 0 1-1 0v-3zm12 7a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H13V8.5a.5.5 0 0 1 1 0v3z"/></svg>',
+            cc: '<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-cc-on" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M215,40H25c-2.7,0-5,2.2-5,5v150c0,2.7,2.2,5,5,5h190c2.7,0,5-2.2,5-5V45C220,42.2,217.8,40,215,40z M108.1,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C90.4,141.7,102,143.5,108.1,137.7z M152.9,137.7c0.7-0.7,1.5-1.5,2.4-2.3l6.6,7.8c-2.2,2.4-5,4.4-8,5.8c-8,3.5-17.3,2.4-24.3-2.9c-3.9-3.6-5.9-8.7-5.5-14v-25.6c0-2.7,0.5-5.3,1.5-7.8c0.9-2.2,2.4-4.3,4.2-5.9c5.7-4.5,13.2-6.2,20.3-4.6c3.3,0.5,6.3,2,8.7,4.3c1.3,1.3,2.5,2.6,3.5,4.2l-7.1,6.9c-2.4-3.7-6.5-5.9-10.9-5.9c-2.4-0.2-4.8,0.7-6.6,2.3c-1.7,1.7-2.5,4.1-2.4,6.5v25.6C135.2,141.7,146.8,143.5,152.9,137.7z"/></svg>',
+            pip: '<svg class="jw-svg-icon jw-svg-icon-pip-on" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path fill-rule="evenodd" clip-rule="evenodd" d="M20 5.125V9.125H22V4.155C22 3.58616 21.5389 3.125 20.97 3.125H2.03C1.46116 3.125 1 3.58613 1 4.155V17.095C1 17.6639 1.46119 18.125 2.03 18.125H12V16.125H3V5.125H20ZM14 11.875C14 11.3227 14.4477 10.875 15 10.875H22C22.5523 10.875 23 11.3227 23 11.875V17.875C23 18.4273 22.5523 18.875 22 18.875H15C14.4477 18.875 14 18.4273 14 17.875V11.875ZM6 12.375L7.79289 10.5821L5.29288 8.0821L6.7071 6.66788L9.20711 9.16789L11 7.375V12.375H6Z"/></svg>',
+            volume0: '<svg class="jw-svg-icon jw-svg-icon-volume-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M116.4,42.8v154.5c0,2.8-1.7,3.6-3.8,1.7l-54.1-48.1H28.9c-2.8,0-5.2-2.3-5.2-5.2V94.2c0-2.8,2.3-5.2,5.2-5.2h29.6l54.1-48.1C114.6,39.1,116.4,39.9,116.4,42.8z M212.3,96.4l-14.6-14.6l-23.6,23.6l-23.6-23.6l-14.6,14.6l23.6,23.6l-23.6,23.6l14.6,14.6l23.6-23.6l23.6,23.6l14.6-14.6L188.7,120L212.3,96.4z"/></svg>',
+            volume50: '<svg class="jw-svg-icon jw-svg-icon-volume-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M116.4,42.8v154.5c0,2.8-1.7,3.6-3.8,1.7l-54.1-48.1H28.9c-2.8,0-5.2-2.3-5.2-5.2V94.2c0-2.8,2.3-5.2,5.2-5.2h29.6l54.1-48.1C114.7,39.1,116.4,39.9,116.4,42.8z M178.2,120c0-22.7-18.5-41.2-41.2-41.2v20.6c11.4,0,20.6,9.2,20.6,20.6c0,11.4-9.2,20.6-20.6,20.6v20.6C159.8,161.2,178.2,142.7,178.2,120z"/></svg>',
+            volume100: '<svg class="jw-svg-icon jw-svg-icon-volume-100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M116.5,42.8v154.4c0,2.8-1.7,3.6-3.8,1.7l-54.1-48H29c-2.8,0-5.2-2.3-5.2-5.2V94.3c0-2.8,2.3-5.2,5.2-5.2h29.6l54.1-48C114.8,39.2,116.5,39.9,116.5,42.8z"/><path d="M136.2,160v-20c11.1,0,20-8.9,20-20s-8.9-20-20-20V80c22.1,0,40,17.9,40,40S158.3,160,136.2,160z"/><path d="M216.2,120c0-44.2-35.8-80-80-80v20c33.1,0,60,26.9,60,60s-26.9,60-60,60v20C180.4,199.9,216.1,164.1,216.2,120z"/></svg>',
+            rewind: '<svg fill="#fff" class="jw-svg-icon jw-svg-icon-rewind" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false"><path d="M113.2,131.078a21.589,21.589,0,0,0-17.7-10.6,21.589,21.589,0,0,0-17.7,10.6,44.769,44.769,0,0,0,0,46.3,21.589,21.589,0,0,0,17.7,10.6,21.589,21.589,0,0,0,17.7-10.6,44.769,44.769,0,0,0,0-46.3Zm-17.7,47.2c-7.8,0-14.4-11-14.4-24.1s6.6-24.1,14.4-24.1,14.4,11,14.4,24.1S103.4,178.278,95.5,178.278Zm-43.4,9.7v-51l-4.8,4.8-6.8-6.8,13-13a4.8,4.8,0,0,1,8.2,3.4v62.7l-9.6-.1Zm162-130.2v125.3a4.867,4.867,0,0,1-4.8,4.8H146.6v-19.3h48.2v-96.4H79.1v19.3c0,5.3-3.6,7.2-8,4.3l-41.8-27.9a6.013,6.013,0,0,1-2.7-8,5.887,5.887,0,0,1,2.7-2.7l41.8-27.9c4.4-2.9,8-1,8,4.3v19.3H209.2A4.974,4.974,0,0,1,214.1,57.778Z"/></svg>',
+            forward: '<svg fill="#fff" class="jw-svg-icon jw-svg-icon-forward" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" focusable="false"> <path d="M146.8,131.078a21.589,21.589,0,0,1,17.7-10.6,21.589,21.589,0,0,1,17.7,10.6,44.769,44.769,0,0,1,0,46.3,21.589,21.589,0,0,1-17.7,10.6,21.589,21.589,0,0,1-17.7-10.6,44.769,44.769,0,0,1,0-46.3Zm17.7,47.2c7.8,0,14.4-11,14.4-24.1s-6.6-24.1-14.4-24.1-14.4,11-14.4,24.1S156.6,178.278,164.5,178.278ZM128.1,187.978v-51l-4.8,4.8-6.8-6.8,13-13a4.8,4.8,0,0,1,8.2,3.4v62.7l-9.6-.1ZM25.9,57.778v125.3a4.867,4.867,0,0,0,4.8,4.8h62.7v-19.3H45.2v-96.4h125.3v19.3c0,5.3,3.6,7.2,8,4.3l41.8-27.9a6.013,6.013,0,0,0,2.7-8,5.887,5.887,0,0,0-2.7-2.7l-41.8-27.9c-4.4-2.9-8-1-8,4.3v19.3H30.8A4.974,4.974,0,0,0,25.9,57.778Z"/> </svg>',
+            fullscreen: '<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-fullscreen-on" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M96.3,186.1c1.9,1.9,1.3,4-1.4,4.4l-50.6,8.4c-1.8,0.5-3.7-0.6-4.2-2.4c-0.2-0.6-0.2-1.2,0-1.7l8.4-50.6c0.4-2.7,2.4-3.4,4.4-1.4l14.5,14.5l28.2-28.2l14.3,14.3l-28.2,28.2L96.3,186.1z M195.8,39.1l-50.6,8.4c-2.7,0.4-3.4,2.4-1.4,4.4l14.5,14.5l-28.2,28.2l14.3,14.3l28.2-28.2l14.5,14.5c1.9,1.9,4,1.3,4.4-1.4l8.4-50.6c0.5-1.8-0.6-3.6-2.4-4.2C197,39,196.4,39,195.8,39.1L195.8,39.1z"/></svg>',
+            fullscreenNot: '<svg fill="#fff"  xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-fullscreen-off" viewBox="0 0 240 240" focusable="false"><path d="M109.2,134.9l-8.4,50.1c-0.4,2.7-2.4,3.3-4.4,1.4L82,172l-27.9,27.9l-14.2-14.2l27.9-27.9l-14.4-14.4c-1.9-1.9-1.3-3.9,1.4-4.4l50.1-8.4c1.8-0.5,3.6,0.6,4.1,2.4C109.4,133.7,109.4,134.3,109.2,134.9L109.2,134.9z M172.1,82.1L200,54.2L185.8,40l-27.9,27.9l-14.4-14.4c-1.9-1.9-3.9-1.3-4.4,1.4l-8.4,50.1c-0.5,1.8,0.6,3.6,2.4,4.1c0.5,0.2,1.2,0.2,1.7,0l50.1-8.4c2.7-0.4,3.3-2.4,1.4-4.4L172.1,82.1z"/></svg>',
+            play: '<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-play" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M62.8,199.5c-1,0.8-2.4,0.6-3.3-0.4c-0.4-0.5-0.6-1.1-0.5-1.8V42.6c-0.2-1.3,0.7-2.4,1.9-2.6c0.7-0.1,1.3,0.1,1.9,0.4l154.7,77.7c2.1,1.1,2.1,2.8,0,3.8L62.8,199.5z"/></svg>',
+            pause: '<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-pause" viewBox="0 0 240 240" focusable="false" fill="#fff"><path d="M100,194.9c0.2,2.6-1.8,4.8-4.4,5c-0.2,0-0.4,0-0.6,0H65c-2.6,0.2-4.8-1.8-5-4.4c0-0.2,0-0.4,0-0.6V45c-0.2-2.6,1.8-4.8,4.4-5c0.2,0,0.4,0,0.6,0h30c2.6-0.2,4.8,1.8,5,4.4c0,0.2,0,0.4,0,0.6V194.9z M180,45.1c0.2-2.6-1.8-4.8-4.4-5c-0.2,0-0.4,0-0.6,0h-30c-2.6-0.2-4.8,1.8-5,4.4c0,0.2,0,0.4,0,0.6V195c-0.2,2.6,1.8,4.8,4.4,5c0.2,0,0.4,0,0.6,0h30c2.6,0.2,4.8-1.8,5-4.4c0-0.2,0-0.4,0-0.6V45.1z"/></svg>',
         };
 
         if (!id) id = c.req.query('id');
@@ -239,9 +236,71 @@ const embedController = async (c) => {
         }
         [breakpointmd] .yt-button { width: 44px; }
         
-        .yt-button svg { height: 24px; width: 24px; fill: var(--media-primary-color, #fff); }
+        /* Style for SVG icons in slots */
+        .yt-button svg,
+        media-play-button svg,
+        media-mute-button svg, 
+        media-pip-button svg, 
+        media-fullscreen-button svg, 
+        media-seek-backward-button svg, 
+        media-seek-forward-button svg { 
+            height: 24px; 
+            width: 24px; 
+            fill: #fff !important;
+        }
+        
         #settings-btn { width: 28px !important; }
-        #settings-btn svg { height: 16px !important; width: 16px !important; }
+        #settings-btn svg { height: 16px !important; width: 16px !important; fill: #fff !important; }
+
+        /* Enhanced styling for JW player icons */
+        .jw-svg-icon-settings {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
+        .jw-svg-icon-volume-0,
+        .jw-svg-icon-volume-50,
+        .jw-svg-icon-volume-100 {
+            width: 24px !important;
+            height: 24px !important;
+        }
+        
+        .jw-svg-icon-rewind,
+        .jw-svg-icon-forward {
+            width: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Ensure media-mute-button icons display correctly */
+        media-mute-button .jw-svg-icon {
+            display: block;
+            width: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Ensure seek button icons display correctly */
+        media-seek-backward-button .jw-svg-icon,
+        media-seek-forward-button .jw-svg-icon {
+            display: block;
+            width: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Settings button specific styling */
+        #settings-btn .jw-svg-icon-settings {
+            display: block;
+            width: 20px !important;
+            height: 20px !important;
+        }
+
+        
+        /* Ensure slotted SVGs are visible and properly sized */
+        media-play-button::part(button) { background: transparent !important; }
+        media-mute-button::part(button) { background: transparent !important; }
+        media-pip-button::part(button) { background: transparent !important; }
+        media-fullscreen-button::part(button) { background: transparent !important; }
+        media-seek-backward-button::part(button) { background: transparent !important; }
+        media-seek-forward-button::part(button) { background: transparent !important; }
 
         /* Comprehensive border/outline removal */
         * { outline: none !important; }
@@ -372,14 +431,18 @@ const embedController = async (c) => {
         
         .mobile-centered-controls media-play-button { 
             display: flex;
-            width: 160px;
-            height: 160px;
+            width: 100px;
+            height: 100px;
             background: transparent !important;
             border-radius: 50%;
             transition: opacity 0.2s ease;
-            --media-button-icon-width: 120px;
             border: none !important;
             opacity: 0.9;
+        }
+        .mobile-centered-controls media-play-button svg {
+            width: 70px !important;
+            height: 70px !important;
+            fill: #fff !important;
         }
         .mobile-centered-controls media-play-button:hover {
             background: transparent !important;
@@ -395,9 +458,12 @@ const embedController = async (c) => {
         
         @media (max-width: 768px) {
             .mobile-centered-controls media-play-button { 
-                width: 80px; 
-                height: 120px;
-                --media-button-icon-width: 96px;
+                width: 70px; 
+                height: 70px;
+            }
+            .mobile-centered-controls media-play-button svg {
+                width: 60px !important;
+                height: 60px !important;
             }
             
             .skip-container {
@@ -529,10 +595,6 @@ const embedController = async (c) => {
         
         <div id="loading-overlay" class="loading-overlay visible">
           <svg width="80" height="80" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path class="spinner_l9ve" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
-            <path class="spinner_l9ve spinner_cMYp" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
-            <path class="spinner_l9ve spinner_gHR3" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,20a9,9,0,1,1,9-9A9,9,0,0,1,12,21Z" transform="translate(12, 12) scale(0)" fill="#fff"/>
-          </svg>
         </div>
         
         <div class="yt-gradient-bottom"></div>
@@ -557,10 +619,9 @@ const embedController = async (c) => {
 
         <media-control-bar>
           <media-mute-button class="yt-button">
-            <svg slot="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="#fff"/>
-                <path id="volume-wave" d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="#fff"/>
-            </svg>
+            ${icons.volume100.replace('<svg', '<svg slot="high"')}
+            ${icons.volume50.replace('<svg', '<svg slot="medium"')}
+            ${icons.volume0.replace('<svg', '<svg slot="off"')}
           </media-mute-button>
           <media-volume-range></media-volume-range>
 
@@ -568,11 +629,11 @@ const embedController = async (c) => {
           <span class="control-spacer"></span>
 
           <media-seek-backward-button seek-offset="10" class="yt-button">
-            ${icons.rollback}
+            ${icons.rewind.replace('<svg', '<svg slot="icon"')}
           </media-seek-backward-button>
           
           <media-seek-forward-button seek-offset="10" class="yt-button">
-            ${icons.rollbackFlipped}
+            ${icons.forward.replace('<svg', '<svg slot="icon"')}
           </media-seek-forward-button>
 
           <button id="settings-btn" class="yt-button" style="background: none; border: none; cursor: pointer;">
@@ -580,27 +641,19 @@ const embedController = async (c) => {
           </button>
 
           <media-pip-button class="yt-button">
-            ${icons.pip}
+            ${icons.pip.replace('<svg', '<svg slot="icon"')}
           </media-pip-button>
 
           <media-fullscreen-button class="yt-button">
-            <svg slot="enter" viewBox="0 0 36 36">
-              <path d="M10 14V10H14M22 10H26V14M26 22V26H22M14 26H10V22" stroke="#fff" stroke-width="2" fill="none"/>
-            </svg>
-            <svg slot="exit" viewBox="0 0 36 36">
-               <path d="M14 10V14H10M22 14H26V10M26 22V26H22M10 22H14V26" stroke="#fff" stroke-width="2" fill="none"/>
-            </svg>
+            ${icons.fullscreen.replace('<svg', '<svg slot="enter"')}
+            ${icons.fullscreenNot.replace('<svg', '<svg slot="exit"')}
           </media-fullscreen-button>
         </media-control-bar>
 
         <div class="mobile-centered-controls" slot="centered-chrome">
           <media-play-button>
-            <svg slot="play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              ${icons.play}
-            </svg>
-            <svg slot="pause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              ${icons.pause}
-            </svg>
+            ${icons.play.replace('<svg', '<svg slot="play"')}
+            ${icons.pause.replace('<svg', '<svg slot="pause"')}
           </media-play-button>
         </div>
       </media-controller>
@@ -1036,51 +1089,7 @@ const embedController = async (c) => {
             }
         });
 
-        function updateSeekButtonLabels() {
-            const seekBackward = document.querySelector('media-seek-backward-button');
-            const seekForward = document.querySelector('media-seek-forward-button');
-            
-            const icon10Backward = '<svg viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;"><path d="M18 7C14.13 7 11 10.13 11 14h3l-4 4-4-4h3c0-5.52 4.48-10 10-10s10 4.48 10 10-4.48 10-10 10v-2c4.42 0 8-3.58 8-8s-3.58-8-8-8z" fill="white"/><text x="18" y="22" font-size="10" fill="white" font-weight="bold" text-anchor="middle">10</text></svg>';
-            const icon10Forward = '<svg viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events: none;"><path d="M18 7C21.87 7 25 10.13 25 14h-3l4 4 4-4h-3c0-5.52-4.48-10-10-10S8 8.48 8 14s4.48 10 10 10v-2c-4.42 0-8-3.58-8-8s3.58-8 8-8z" fill="white"/><text x="18" y="22" font-size="10" fill="white" font-weight="bold" text-anchor="middle">10</text></svg>';
-            
-            if (seekBackward) {
-                // Force seek offset to 10
-                seekBackward.setAttribute('seek-offset', '10');
-                seekBackward.seekOffset = 10;
-                seekBackward.innerHTML = icon10Backward;
-                seekBackward.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
-                try {
-                    if (seekBackward.shadowRoot) {
-                        const allElements = seekBackward.shadowRoot.querySelectorAll('*');
-                        allElements.forEach(el => {
-                            el.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
-                            if (el.textContent && el.textContent.includes('30')) el.textContent = el.textContent.replace('30', '10');
-                        });
-                    }
-                } catch (e) {}
-            }
-            
-            if (seekForward) {
-                // Force seek offset to 10
-                seekForward.setAttribute('seek-offset', '10');
-                seekForward.seekOffset = 10;
-                seekForward.innerHTML = icon10Forward;
-                seekForward.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
-                try {
-                    if (seekForward.shadowRoot) {
-                        const allElements = seekForward.shadowRoot.querySelectorAll('*');
-                        allElements.forEach(el => {
-                            el.style.cssText = 'outline: none !important; border: none !important; box-shadow: none !important;';
-                            if (el.textContent && el.textContent.includes('30')) el.textContent = el.textContent.replace('30', '10');
-                        });
-                    }
-                } catch (e) {}
-            }
-        }
         
-        setTimeout(updateSeekButtonLabels, 500);
-        setTimeout(updateSeekButtonLabels, 1000);
-        setTimeout(updateSeekButtonLabels, 2000);
 
         video.addEventListener('timeupdate', () => {
             const t = video.currentTime;
