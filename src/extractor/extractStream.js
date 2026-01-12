@@ -13,7 +13,7 @@ export const extractStream = async ({ selectedServer, id }) => {
     const directUrl = streamingLink.link.file;
     const encodedUrl = encodeURIComponent(directUrl);
     const encodedReferer = encodeURIComponent('https://megacloud.tv');
-    const proxiedUrl = `https://vercel-proxy-ryanwtf88.vercel.app/api/proxy?url=${encodedUrl}&referer=${encodedReferer}`;
+    const proxiedUrl = `https://proxy.animo.qzz.io/?url=${encodedUrl}&referer=${encodedReferer}`;
 
     streamingLink.link.directUrl = directUrl;
     streamingLink.link.file = proxiedUrl;
