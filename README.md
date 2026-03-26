@@ -215,14 +215,7 @@ docker-compose up -d
 1. Fork or clone the repository to your GitHub account
 2. Sign up at [Vercel](https://vercel.com)
 3. Create a new project and import your repository
-4. Configure environment variables in Vercel Dashboard:
-   - `UPSTASH_REDIS_REST_URL` (Required - Get from [Upstash](https://upstash.com))
-   - `UPSTASH_REDIS_REST_TOKEN` (Required)
-   - `ORIGIN=*` (or your frontend domain)
-   - `RATE_LIMIT_ENABLED=true`
-   - `RATE_LIMIT_WINDOW_MS=60000`
-   - `RATE_LIMIT_LIMIT=100`
-5. Click "Deploy"
+4. Click "Deploy"
 
 **Why Vercel?**
 - ![Supported](https://img.shields.io/badge/Supported-brightgreen?style=flat-square) Serverless architecture with automatic scaling
@@ -230,18 +223,7 @@ docker-compose up -d
 - ![Supported](https://img.shields.io/badge/Supported-brightgreen?style=flat-square) Free tier with generous limits
 - ![Supported](https://img.shields.io/badge/Supported-brightgreen?style=flat-square) Automatic HTTPS and custom domains
 - ![Supported](https://img.shields.io/badge/Supported-brightgreen?style=flat-square) Git-based deployments (auto-deploy on push)
-- ![Supported](https://img.shields.io/badge/Supported-brightgreen?style=flat-square) Built-in Redis support via Upstash
 
-**Environment Variables:**
-
-| Key | Value | Required |
-|-----|-------|----------|
-| `UPSTASH_REDIS_REST_URL` | Your Upstash Redis URL | Yes |
-| `UPSTASH_REDIS_REST_TOKEN` | Your Upstash Redis Token | Yes |
-| `ORIGIN` | `*` or your domain | No |
-| `RATE_LIMIT_ENABLED` | `true` | No |
-| `RATE_LIMIT_WINDOW_MS` | `60000` | No |
-| `RATE_LIMIT_LIMIT` | `100` | No |
 
 ---
 

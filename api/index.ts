@@ -1,46 +1,62 @@
-import app from '../src/app';
+import { Hono } from 'hono';
+import { handle } from 'hono/vercel';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import hiAnimeRoutes from '../src/routes/routes';
+import config from '../src/config/config';
+import { AppError } from '../src/utils/errors';
+import { fail } from '../src/utils/response';
 
-type VercelResponse = {
-  status: (code: number) => VercelResponse;
-  setHeader: (name: string, value: string) => VercelResponse;
-  send: (body: string | object | Buffer) => VercelResponse;
-  json: (body: object) => VercelResponse;
-};
+const app = new Hono();
 
-export default async function handler(
-  req: {
-    headers: Record<string, string | string[] | undefined>;
-    method: string;
-    url: string;
-    body: unknown;
-  },
-  res: VercelResponse
-) {
-  try {
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const url = `${protocol}://${host}${req.url}`;
-    const webRequest = new Request(url, {
-      method: req.method,
-      headers: new Headers(req.headers as Record<string, string>),
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
-    });
+// CORS Configuration
+const origins = config.origin.includes(',')
+  ? config.origin.split(',').map(o => o.trim())
+  : config.origin === '*'
+    ? '*'
+    : [config.origin];
 
-    const webResponse = await app.fetch(webRequest);
-    res.status(webResponse.status);
-    webResponse.headers.forEach((value: string, key: string) => {
-      res.setHeader(key, value);
-    });
+app.use(
+  '*',
+  cors({
+    origin: origins,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposeHeaders: ['Content-Length', 'X-Request-Id'],
+    maxAge: 600,
+    credentials: true,
+  })
+);
 
-    const body = await webResponse.text();
-    res.send(body);
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error('Vercel handler error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Internal Server Error',
-      message: err.message,
-    });
-  }
+// Logging
+if (!config.isProduction || config.enableLogging) {
+  app.use('/api/v2/*', logger());
 }
+
+// Health Check
+app.get('/ping', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: 'vercel',
+  });
+});
+
+// Routes
+app.route('/api/v2', hiAnimeRoutes);
+
+// Error Handling
+app.onError((err, c) => {
+  if (err instanceof AppError) {
+    return fail(c, err.message, err.statusCode, err.details);
+  }
+
+  console.error('Vercel Unexpected Error:', err.message);
+  return fail(c, 'Internal server error', 500);
+});
+
+app.notFound((c) => {
+  return fail(c, 'Route not found', 404);
+});
+
+export default handle(app);
