@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+
+# Documentation
+README.md
+*.md
+docs
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test
+tests
+*.test.js
+*.spec.js
+coverage
+
+# Build artifacts
+dist
+build
+.cache
+
+# Logs
+logs
+*.log
+
+# Husky and Git hooks
+.husky
+
+# ESLint cache
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# PM2
+.pm2

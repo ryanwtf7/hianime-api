@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "strict": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "types": [
+      "bun-types"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": false,
+    "outDir": "./src/assets/js",
+    "esModuleInterop": true
+  }
+}
